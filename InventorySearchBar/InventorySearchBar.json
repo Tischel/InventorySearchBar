@@ -1,0 +1,9 @@
+﻿{
+  "Name": "Inventory Search Bar",
+  "Author": "Tischel",
+  "Punchline": ":)",
+  "Description": "Adds a search bar directly in the inventory window allowing to quickly find items.",
+  "RepoUrl": "https://github.com/Tischel/InventorySearchBar",
+  "Tags": [ "UI" ],
+  "Changelog": "0.1.0.0\n- First release."
+}
