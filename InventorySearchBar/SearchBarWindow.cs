@@ -74,7 +74,7 @@ namespace InventorySearchBar
             ImGui.PushStyleColor(ImGuiCol.FrameBgActive, ImGui.ColorConvertFloat4ToU32(Settings.SearchBarBackgroundColor));
             ImGui.PushStyleColor(ImGuiCol.Text, ImGui.ColorConvertFloat4ToU32(Settings.SearchBarTextColor));
 
-            if (_needsFocus)
+            if (Plugin.IsKeybindActive || _needsFocus)
             {
                 ImGui.SetKeyboardFocusHere(0);
                 _needsFocus = false;

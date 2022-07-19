@@ -3,7 +3,9 @@ using CriticalCommonLib.Models;
 using CriticalCommonLib.Services;
 using CriticalCommonLib.Services.Ui;
 using Dalamud.Data;
+using Dalamud.Game;
 using Dalamud.Game.ClientState;
+using Dalamud.Game.ClientState.Keys;
 using Dalamud.Game.Command;
 using Dalamud.Game.Gui;
 using Dalamud.Interface;
@@ -23,9 +25,11 @@ namespace InventorySearchBar
         public static ClientState ClientState { get; private set; } = null!;
         public static CommandManager CommandManager { get; private set; } = null!;
         public static DalamudPluginInterface PluginInterface { get; private set; } = null!;
+        public static Framework Framework { get; private set; } = null!;
         public static GameGui GameGui { get; private set; } = null!;
         public static UiBuilder UiBuilder { get; private set; } = null!;
         public static DataManager DataManager { get; private set; } = null!;
+        public static KeyState KeyState { get; private set; } = null!;
 
         public static string AssemblyLocation { get; private set; } = "";
         public string Name => "InventorySearchBar";
@@ -43,7 +47,9 @@ namespace InventorySearchBar
         public static CharacterMonitor CharacterMonitor { get; private set; } = null!;
         public static GameUiManager GameUi { get; private set; } = null!;
 
-        private static List<List<bool>> _itemsMap = null!;
+        private List<List<bool>> _itemsMap = null!;
+        private Tuple<IntPtr, GameInventoryType> _activeInventory = null!;
+        public static bool IsKeybindActive = false;
 
         internal enum GameInventoryType
         {
@@ -57,16 +63,22 @@ namespace InventorySearchBar
             ClientState clientState,
             CommandManager commandManager,
             DalamudPluginInterface pluginInterface,
+            Framework framwork,
             DataManager dataManager,
-            GameGui gameGui
+            GameGui gameGui,
+            KeyState keyState
         )
         {
             ClientState = clientState;
             CommandManager = commandManager;
             PluginInterface = pluginInterface;
+            Framework = framwork;
             DataManager = dataManager;
             GameGui = gameGui;
             UiBuilder = pluginInterface.UiBuilder;
+            KeyState = keyState;
+
+            KeyboardHelper.Initialize();
 
             pluginInterface.Create<Service>();
             ExcelCache.Initialise();
@@ -88,6 +100,7 @@ namespace InventorySearchBar
 
             Version = Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "0.1.0.0";
 
+            Framework.Update += Update;
             UiBuilder.Draw += Draw;
             UiBuilder.OpenConfigUi += OpenConfigUi;
 
@@ -150,24 +163,36 @@ namespace InventorySearchBar
             _windowSystem.AddWindow(_searchBarWindow);
         }
 
-        private unsafe void Draw()
+        private void Update(Framework framework)
         {
             if (Settings == null || ClientState.LocalPlayer == null) return;
 
+            KeyboardHelper.Instance?.Update();
+
+            _activeInventory = FindInventory();
+            if (_activeInventory.Item2 != GameInventoryType.None)
+            {
+                IsKeybindActive = Settings.Keybind.IsActive();
+            }
+        }
+
+        private unsafe void Draw()
+        {
+            if (Settings == null || ClientState.LocalPlayer == null || _activeInventory == null) return;
+
             _windowSystem?.Draw();
 
-            Tuple<IntPtr, GameInventoryType> result = FindInventory();
-            if (result.Item1 == IntPtr.Zero || result.Item2 == GameInventoryType.None)
+            if (_activeInventory.Item1 == IntPtr.Zero || _activeInventory.Item2 == GameInventoryType.None)
             {
                 _searchBarWindow.InventoryAddon = IntPtr.Zero;
                 _searchBarWindow.IsOpen = false;
                 return;
             }
 
-            _searchBarWindow.InventoryAddon = result.Item1;
+            _searchBarWindow.InventoryAddon = _activeInventory.Item1;
             _searchBarWindow.IsOpen = true;
 
-            SearchItems(result.Item1, result.Item2, _searchBarWindow.SearchTerm);
+            SearchItems(_activeInventory.Item1, _activeInventory.Item2, _searchBarWindow.SearchTerm);
         }
 
         private unsafe Tuple<IntPtr, GameInventoryType> FindInventory()
@@ -288,6 +313,8 @@ namespace InventorySearchBar
             }
 
             ClearNodeHighlights();
+
+            KeyboardHelper.Instance?.Dispose();
 
             Settings.Save(Settings);
 
