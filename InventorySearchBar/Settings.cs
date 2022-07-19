@@ -13,6 +13,7 @@ namespace InventorySearchBar
         public bool HightlightTabs = true;
 
         public KeyBind Keybind = new KeyBind(70, true, false, false); // ctrl + f
+        public bool KeybindOnly = true;
         public bool KeybindPassthrough = false;
 
         public int SearchBarWidth = 100;

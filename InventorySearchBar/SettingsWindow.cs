@@ -16,7 +16,7 @@ namespace InventorySearchBar
                 | ImGuiWindowFlags.NoResize
                 | ImGuiWindowFlags.NoScrollWithMouse;
 
-            Size = new Vector2(236, 352);
+            Size = new Vector2(236, 376);
         }
 
         public override void Draw()
@@ -53,9 +53,15 @@ namespace InventorySearchBar
             ImGui.Spacing();
 
             ImGui.Text("Keybind");
-            ImGui.BeginChild("##Keybind", new Vector2(220 * _scale, 70 * _scale), true);
+            ImGui.BeginChild("##Keybind", new Vector2(220 * _scale, 94 * _scale), true);
             {
                 Plugin.Settings.Keybind.Draw("ISB", 200);
+
+                ImGui.Checkbox("Keybind only", ref Plugin.Settings.KeybindOnly);
+                if (ImGui.IsItemHovered())
+                {
+                    ImGui.SetTooltip("When enabled, the search bar will only appear when the keybind is used.");
+                }
 
                 ImGui.Checkbox("Keybind Passthrough", ref Plugin.Settings.KeybindPassthrough);
                 if (ImGui.IsItemHovered())

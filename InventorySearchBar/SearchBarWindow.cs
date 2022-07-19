@@ -11,6 +11,7 @@ namespace InventorySearchBar
         public string SearchTerm = "";
         public IntPtr InventoryAddon = IntPtr.Zero;
         private bool _needsFocus = false;
+        private bool _canShow = false;
 
         private Settings Settings => Plugin.Settings;
 
@@ -33,6 +34,8 @@ namespace InventorySearchBar
             {
                 _needsFocus = true;
             }
+
+            _canShow = !Plugin.Settings.KeybindOnly;
         }
 
         public override void OnClose()
@@ -67,8 +70,15 @@ namespace InventorySearchBar
             ImGui.PopStyleVar(3);
         }
 
-        public override void Draw()
+        public override unsafe void Draw()
         {
+            if (Plugin.Settings.KeybindOnly && Plugin.IsKeybindActive)
+            {
+                _canShow = true;
+            }
+
+            if (!_canShow) return;
+
             ImGui.PushItemWidth(Settings.SearchBarWidth);
             ImGui.PushStyleColor(ImGuiCol.FrameBg, ImGui.ColorConvertFloat4ToU32(Settings.SearchBarBackgroundColor));
             ImGui.PushStyleColor(ImGuiCol.FrameBgActive, ImGui.ColorConvertFloat4ToU32(Settings.SearchBarBackgroundColor));
@@ -80,7 +90,12 @@ namespace InventorySearchBar
                 _needsFocus = false;
             }
 
-            ImGui.InputText("", ref SearchTerm, 100, ImGuiInputTextFlags.AlwaysOverwrite | ImGuiInputTextFlags.NoUndoRedo);
+            ImGui.InputText("", ref SearchTerm, 100);
+
+            if (Plugin.Settings.KeybindOnly && !ImGui.IsItemActive())
+            {
+                _canShow = false;
+            }
 
             ImGui.PopStyleColor(3);
         }
