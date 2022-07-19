@@ -8,8 +8,9 @@ namespace InventorySearchBar
 {
     public class Settings
     {
-        public bool AutoFocus = true;
+        public bool AutoFocus = false;
         public bool AutoClear = true;
+        public bool HightlightTabs = true;
         public int SearchBarWidth = 100;
         public Vector4 SearchBarBackgroundColor = new Vector4(0.1f, 0.1f, 0.1f, 1);
         public Vector4 SearchBarTextColor = Vector4.One;

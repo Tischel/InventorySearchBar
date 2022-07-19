@@ -1,21 +1,20 @@
-﻿using Dalamud.Data;
-using Dalamud.Game;
+﻿using CriticalCommonLib;
+using CriticalCommonLib.Models;
+using CriticalCommonLib.Services;
+using CriticalCommonLib.Services.Ui;
+using Dalamud.Data;
 using Dalamud.Game.ClientState;
-using Dalamud.Game.ClientState.Keys;
 using Dalamud.Game.Command;
 using Dalamud.Game.Gui;
 using Dalamud.Interface;
 using Dalamud.Interface.Windowing;
-using Dalamud.Logging;
 using Dalamud.Plugin;
-using FFXIVClientStructs.FFXIV.Client.UI;
 using FFXIVClientStructs.FFXIV.Component.GUI;
-using ImGuiNET;
+using InventorySearchBar.Helpers;
 using System;
 using System.Collections.Generic;
-using System.Numerics;
+using System.Linq;
 using System.Reflection;
-using SigScanner = Dalamud.Game.SigScanner;
 
 namespace InventorySearchBar
 {
@@ -24,12 +23,9 @@ namespace InventorySearchBar
         public static ClientState ClientState { get; private set; } = null!;
         public static CommandManager CommandManager { get; private set; } = null!;
         public static DalamudPluginInterface PluginInterface { get; private set; } = null!;
-        public static DataManager DataManager { get; private set; } = null!;
-        public static Framework Framework { get; private set; } = null!;
         public static GameGui GameGui { get; private set; } = null!;
-        public static SigScanner SigScanner { get; private set; } = null!;
         public static UiBuilder UiBuilder { get; private set; } = null!;
-        public static KeyState KeyState { get; private set; } = null!;
+        public static DataManager DataManager { get; private set; } = null!;
 
         public static string AssemblyLocation { get; private set; } = "";
         public string Name => "InventorySearchBar";
@@ -39,17 +35,21 @@ namespace InventorySearchBar
         public static Settings Settings { get; private set; } = null!;
 
         private static WindowSystem _windowSystem = null!;
-        //private static SettingsWindow _settingsWindow = null!;
+        private static SettingsWindow _settingsWindow = null!;
+        private static SearchBarWindow _searchBarWindow = null!;
 
-        private bool _isInventoryOpened = false;
-        private string _searchTerm = "";
-        private bool _needsFocus = false;
+        private static OdrScanner OdrScanner { get; set; } = null!;
+        public static InventoryMonitor InventoryMonitor { get; private set; } = null!;
+        public static CharacterMonitor CharacterMonitor { get; private set; } = null!;
+        public static GameUiManager GameUi { get; private set; } = null!;
+
+        private static List<List<bool>> _itemsMap = null!;
 
         internal enum GameInventoryType
         {
             Normal = 0,
-            Expanded = 1,
-            All = 2,
+            Large = 1,
+            Largest = 2,
             None = 3
         }
 
@@ -58,21 +58,24 @@ namespace InventorySearchBar
             CommandManager commandManager,
             DalamudPluginInterface pluginInterface,
             DataManager dataManager,
-            Framework framework,
-            GameGui gameGui,
-            SigScanner sigScanner,
-            KeyState keyState
+            GameGui gameGui
         )
         {
             ClientState = clientState;
             CommandManager = commandManager;
             PluginInterface = pluginInterface;
             DataManager = dataManager;
-            Framework = framework;
             GameGui = gameGui;
-            SigScanner = sigScanner;
-            UiBuilder = PluginInterface.UiBuilder;
-            KeyState = keyState;
+            UiBuilder = pluginInterface.UiBuilder;
+
+            pluginInterface.Create<Service>();
+            ExcelCache.Initialise();
+            GameInterface.Initialise(Service.Scanner);
+
+            CharacterMonitor = new CharacterMonitor();
+            OdrScanner = new OdrScanner(CharacterMonitor);
+            GameUi = new GameUiManager();
+            InventoryMonitor = new InventoryMonitor(OdrScanner, CharacterMonitor, GameUi);
 
             if (pluginInterface.AssemblyLocation.DirectoryName != null)
             {
@@ -108,10 +111,22 @@ namespace InventorySearchBar
                 }
             );
 
-            InventoryHelper.Initialize();
             Settings = Settings.Load();
 
             CreateWindows();
+
+            // dummy map
+            _itemsMap = new List<List<bool>>();
+            for (int i = 0; i < 4; i++)
+            {
+                List<bool> list = new List<bool>(35);
+                for (int j = 0; j < 35; j++)
+                {
+                    list.Add(false);
+                }
+
+                _itemsMap.Add(list);
+            }
         }
 
         public void Dispose()
@@ -122,15 +137,17 @@ namespace InventorySearchBar
 
         private void PluginCommand(string command, string arguments)
         {
-            //_settingsWindow.IsOpen = !_settingsWindow.IsOpen;
+            _settingsWindow.IsOpen = !_settingsWindow.IsOpen;
         }
 
         private void CreateWindows()
         {
-            //_settingsWindow = new SettingsWindow("Inventory Search Bar Settings");
+            _settingsWindow = new SettingsWindow("Inventory Search Bar v" + Version);
+            _searchBarWindow = new SearchBarWindow("InventorySearchBar");
 
             _windowSystem = new WindowSystem("InventorySearchBar_Windows");
-            //_windowSystem.AddWindow(_settingsWindow);
+            _windowSystem.AddWindow(_settingsWindow);
+            _windowSystem.AddWindow(_searchBarWindow);
         }
 
         private unsafe void Draw()
@@ -140,152 +157,127 @@ namespace InventorySearchBar
             _windowSystem?.Draw();
 
             Tuple<IntPtr, GameInventoryType> result = FindInventory();
-            if (result.Item1 == IntPtr.Zero || result.Item2 == GameInventoryType.None) { return; }
-
-            if (!_isInventoryOpened)
+            if (result.Item1 == IntPtr.Zero || result.Item2 == GameInventoryType.None)
             {
-                if (Settings.AutoFocus)
-                {
-                    _needsFocus = true;
-                }
-
-                if (Settings.AutoClear)
-                {
-                    _searchTerm = "";
-                }
+                _searchBarWindow.InventoryAddon = IntPtr.Zero;
+                _searchBarWindow.IsOpen = false;
+                return;
             }
-            _isInventoryOpened = true;
 
-            DrawSearchBar(result.Item1, result.Item2);
+            _searchBarWindow.InventoryAddon = result.Item1;
+            _searchBarWindow.IsOpen = true;
+
+            SearchItems(result.Item1, result.Item2, _searchBarWindow.SearchTerm);
         }
 
         private unsafe Tuple<IntPtr, GameInventoryType> FindInventory()
         {
             // normal
-            AtkUnitBase* addon = (AtkUnitBase*)GameGui.GetAddonByName("Inventory", 1);
+            IntPtr ptr = NormalInventoryHelper.GetNode();
+            AtkUnitBase* addon = (AtkUnitBase*)ptr;
             if (addon != null && addon->IsVisible)
             {
                 return new Tuple<IntPtr, GameInventoryType>((IntPtr)addon, GameInventoryType.Normal);
             }
 
             // expanded
-            addon = (AtkUnitBase*)GameGui.GetAddonByName("InventoryLarge", 1);
+            ptr = LargeInventoryHelper.GetNode();
+            addon = (AtkUnitBase*)ptr;
             if (addon != null && addon->IsVisible)
             {
-                return new Tuple<IntPtr, GameInventoryType>((IntPtr)addon, GameInventoryType.Expanded);
+                return new Tuple<IntPtr, GameInventoryType>((IntPtr)addon, GameInventoryType.Large);
             }
 
             // all
-            addon = (AtkUnitBase*)GameGui.GetAddonByName("InventoryExpansion", 1);
+            ptr = LargestInventoryHelper.GetNode();
+            addon = (AtkUnitBase*)ptr;
             if (addon != null && addon->IsVisible)
             {
-                return new Tuple<IntPtr, GameInventoryType>((IntPtr)addon, GameInventoryType.All);
+                return new Tuple<IntPtr, GameInventoryType>((IntPtr)addon, GameInventoryType.Largest);
             }
 
             // none
             return new Tuple<IntPtr, GameInventoryType>(IntPtr.Zero, GameInventoryType.None);
         }
 
-        private unsafe void DrawSearchBar(IntPtr addon, GameInventoryType type)
+        private unsafe void SearchItems(IntPtr addon, GameInventoryType type, string searchTerm)
         {
-            AtkUnitBase* inventory = (AtkUnitBase*)addon;
-
-            ImGui.PushStyleVar(ImGuiStyleVar.WindowRounding, 0);
-            ImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, new Vector2(0, 0));
-            ImGui.PushStyleVar(ImGuiStyleVar.WindowBorderSize, 0);
-
-            float width = inventory->WindowCollisionNode->AtkResNode.Width * inventory->Scale;
-            float x = inventory->X + width / 2f - Settings.SearchBarWidth / 2f;
-            float y = inventory->Y + 13 * inventory->Scale;
-
-            ImGui.SetNextWindowPos(new Vector2(x, y));
-            ImGui.SetNextWindowSize(new Vector2(Settings.SearchBarWidth, 24));
-
-            var begin = ImGui.Begin(
-                "InventorySearchBar",
-                ImGuiWindowFlags.NoTitleBar
-              | ImGuiWindowFlags.NoScrollbar
-              | ImGuiWindowFlags.AlwaysAutoResize
-              | ImGuiWindowFlags.NoBackground
-              | ImGuiWindowFlags.NoSavedSettings
-            );
-
-            ImGui.PopStyleVar(3);
-
-            if (!begin)
-            {
-                ImGui.End();
-                return;
-            }
-
-            ImGui.PushItemWidth(Settings.SearchBarWidth);
-            ImGui.PushStyleColor(ImGuiCol.FrameBg, ImGui.ColorConvertFloat4ToU32(Settings.SearchBarBackgroundColor));
-            ImGui.PushStyleColor(ImGuiCol.FrameBgActive, ImGui.ColorConvertFloat4ToU32(Settings.SearchBarBackgroundColor));
-            ImGui.PushStyleColor(ImGuiCol.Text, ImGui.ColorConvertFloat4ToU32(Settings.SearchBarTextColor));
-
-            ImGui.InputText("", ref _searchTerm, 100);
-
-            if (_needsFocus)
-            {
-                ImGui.SetKeyboardFocusHere(0);
-                _needsFocus = false;
-            }
-
             List<List<bool>>? results = null;
-
-            if (_searchTerm.Length > 1)
+            if (searchTerm.Length > 1)
             {
-                results = InventoryHelper.Instance.FindItems(_searchTerm);
+                results = FindItems(searchTerm);
             }
 
             switch (type)
             {
-                case GameInventoryType.Normal: HighlightNormalInventory(addon, results); break;
-                case GameInventoryType.Expanded: HighlightExpandedInventory(addon, results); break;
-                case GameInventoryType.All: HighlightAllInventory(addon, results); break;
+                case GameInventoryType.Normal: NormalInventoryHelper.HighlightItems(addon, results); break;
+                case GameInventoryType.Large: LargeInventoryHelper.HighlightItems(addon, results); break;
+                case GameInventoryType.Largest: LargestInventoryHelper.HighlightItems(results); break;
+            }
+        }
+
+        public unsafe List<List<bool>> FindItems(string searchTerm)
+        {
+            List<List<bool>> results = new List<List<bool>>(_itemsMap);
+
+            string text = searchTerm.ToUpper();
+            List<InventoryItem> items = InventoryMonitor.GetSpecificInventory(CharacterMonitor.ActiveCharacter, InventoryCategory.CharacterBags);
+
+            foreach (InventoryItem item in items)
+            {
+                bool highlight = false;
+                if (item.Item != null)
+                {
+                    highlight = item.Item.Name.ToString().ToUpper().Contains(text);
+                }
+
+                results[(int)item.SortedContainer][34 - item.SortedSlotIndex] = highlight;
             }
 
-            ImGui.PopStyleColor(3);
-            ImGui.End();
+            return results;
         }
 
-        private unsafe void HighlightNormalInventory(IntPtr addon, List<List<bool>>? results)
+        private static unsafe void ClearNodeHighlights()
         {
-            AtkUnitBase* inventory = (AtkUnitBase*)addon;
-        }
-
-        private unsafe void HighlightExpandedInventory(IntPtr addon, List<List<bool>>? results)
-        {
-            AtkUnitBase* inventory = (AtkUnitBase*)addon;
-        }
-
-        private unsafe void HighlightAllInventory(IntPtr addon, List<List<bool>>? results)
-        {
-            AtkUnitBase* inventory = (AtkUnitBase*)addon;
-
-            for (int i = 0; i < 4; i++)
+            IntPtr normalInventory = NormalInventoryHelper.GetNode();
+            if (normalInventory != IntPtr.Zero)
             {
-                AtkUnitBase* grid = (AtkUnitBase*)GameGui.GetAddonByName("InventoryGrid" + i + "E", 1);
-                if (grid == null) { continue; }
+                NormalInventoryHelper.HighlightItems(normalInventory, null);
+                NormalInventoryHelper.HighlightTabs(normalInventory, null, true);
+            }
 
-                for (int j = 3; j < grid->UldManager.NodeListCount; j++)
-                {
-                    bool highlight = true;
-                    if (results != null && results[i].Count > j - 3)
-                    {
-                        highlight = results[i][j - 3];
-                    }
+            IntPtr largeInventory = LargeInventoryHelper.GetNode();
+            if (largeInventory != IntPtr.Zero)
+            {
+                LargeInventoryHelper.HighlightItems(largeInventory, null);
+                LargeInventoryHelper.HighlightTabs(largeInventory, null, true);
+            }
 
-                    grid->UldManager.NodeList[j]->MultiplyRed = highlight ? (byte)100 : (byte)20;
-                    grid->UldManager.NodeList[j]->MultiplyGreen = highlight ? (byte)100 : (byte)20;
-                    grid->UldManager.NodeList[j]->MultiplyBlue = highlight ? (byte)100 : (byte)20;
-                }
+            IntPtr largestInventory = LargestInventoryHelper.GetNode();
+            if (largestInventory != IntPtr.Zero)
+            {
+                LargestInventoryHelper.HighlightItems(null);
+            }
+        }
+
+        public static unsafe void ClearTabHighlights()
+        {
+            IntPtr normalInventory = NormalInventoryHelper.GetNode();
+            if (normalInventory != IntPtr.Zero)
+            {
+                NormalInventoryHelper.HighlightTabs(normalInventory, null, true);
+            }
+
+            IntPtr largeInventory = LargeInventoryHelper.GetNode();
+            if (largeInventory != IntPtr.Zero)
+            {
+                LargeInventoryHelper.HighlightTabs(largeInventory, null, true);
             }
         }
 
         private void OpenConfigUi()
         {
-            //_settingsWindow.IsOpen = true;
+            _settingsWindow.IsOpen = true;
         }
 
         protected virtual void Dispose(bool disposing)
@@ -295,8 +287,17 @@ namespace InventorySearchBar
                 return;
             }
 
+            ClearNodeHighlights();
+
             Settings.Save(Settings);
-            InventoryHelper.Instance?.Dispose();
+
+            InventoryMonitor.Dispose();
+            GameUi.Dispose();
+            CharacterMonitor.Dispose();
+            OdrScanner.Dispose();
+
+            ExcelCache.Destroy();
+            GameInterface.Dispose();
 
             _windowSystem.RemoveAllWindows();
 
