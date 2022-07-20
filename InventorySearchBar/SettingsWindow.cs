@@ -16,7 +16,7 @@ namespace InventorySearchBar
                 | ImGuiWindowFlags.NoResize
                 | ImGuiWindowFlags.NoScrollWithMouse;
 
-            Size = new Vector2(236, 376);
+            Size = new Vector2(236, 400);
         }
 
         public override void Draw()
@@ -74,8 +74,10 @@ namespace InventorySearchBar
             ImGui.Spacing();
 
             ImGui.Text("Style");
-            ImGui.BeginChild("##Style", new Vector2(220 * _scale, 70 * _scale), true);
+            ImGui.BeginChild("##Style", new Vector2(220 * _scale, 94 * _scale), true);
             {
+                ImGui.PushItemWidth(80);
+                ImGui.DragInt("Search Bar Width", ref Plugin.Settings.SearchBarWidth, 1, 50, 500);
                 ImGui.ColorEdit4("Search Bar Background Color", ref Plugin.Settings.SearchBarBackgroundColor, ImGuiColorEditFlags.NoInputs);
                 ImGui.ColorEdit4("Search Bar Text Color", ref Plugin.Settings.SearchBarTextColor, ImGuiColorEditFlags.NoInputs);
             }
