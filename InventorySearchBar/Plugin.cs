@@ -1,5 +1,4 @@
 ﻿using CriticalCommonLib;
-using CriticalCommonLib.Models;
 using CriticalCommonLib.Services;
 using CriticalCommonLib.Services.Ui;
 using Dalamud.Data;
@@ -11,11 +10,9 @@ using Dalamud.Game.Gui;
 using Dalamud.Interface;
 using Dalamud.Interface.Windowing;
 using Dalamud.Plugin;
-using FFXIVClientStructs.FFXIV.Component.GUI;
 using InventorySearchBar.Helpers;
+using InventorySearchBar.Inventories;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 
 namespace InventorySearchBar
@@ -47,17 +44,8 @@ namespace InventorySearchBar
         public static CharacterMonitor CharacterMonitor { get; private set; } = null!;
         public static GameUiManager GameUi { get; private set; } = null!;
 
-        private List<List<bool>> _itemsMap = null!;
-        private Tuple<IntPtr, GameInventoryType> _activeInventory = null!;
+        private static InventoriesManager _manager = null!;
         public static bool IsKeybindActive = false;
-
-        internal enum GameInventoryType
-        {
-            Normal = 0,
-            Large = 1,
-            Largest = 2,
-            None = 3
-        }
 
         public Plugin(
             ClientState clientState,
@@ -128,18 +116,7 @@ namespace InventorySearchBar
 
             CreateWindows();
 
-            // dummy map
-            _itemsMap = new List<List<bool>>();
-            for (int i = 0; i < 4; i++)
-            {
-                List<bool> list = new List<bool>(35);
-                for (int j = 0; j < 35; j++)
-                {
-                    list.Add(false);
-                }
-
-                _itemsMap.Add(list);
-            }
+            _manager = new InventoriesManager();
         }
 
         public void Dispose()
@@ -163,14 +140,14 @@ namespace InventorySearchBar
             _windowSystem.AddWindow(_searchBarWindow);
         }
 
-        private void Update(Framework framework)
+        private unsafe void Update(Framework framework)
         {
             if (Settings == null || ClientState.LocalPlayer == null) return;
 
             KeyboardHelper.Instance?.Update();
+            _manager.Update();
 
-            _activeInventory = FindInventory();
-            if (_activeInventory.Item2 != GameInventoryType.None)
+            if (_manager.ActiveInventory != null)
             {
                 IsKeybindActive = Settings.Keybind.IsActive();
             }
@@ -178,126 +155,28 @@ namespace InventorySearchBar
 
         private unsafe void Draw()
         {
-            if (Settings == null || ClientState.LocalPlayer == null || _activeInventory == null) return;
+            if (Settings == null || ClientState.LocalPlayer == null) return;
 
-            _windowSystem?.Draw();
-
-            if (_activeInventory.Item1 == IntPtr.Zero || _activeInventory.Item2 == GameInventoryType.None)
+            if (_manager.ActiveInventory == null)
             {
                 _searchBarWindow.InventoryAddon = IntPtr.Zero;
                 _searchBarWindow.IsOpen = false;
-                return;
+            }
+            else
+            {
+                _searchBarWindow.InventoryAddon = _manager.ActiveInventory.Addon;
+                _searchBarWindow.IsOpen = true;
+
+                _manager.ActiveInventory.ApplyFilter(_searchBarWindow.SearchTerm);
+                _manager.ActiveInventory.UpdateHighlights();
             }
 
-            _searchBarWindow.InventoryAddon = _activeInventory.Item1;
-            _searchBarWindow.IsOpen = true;
-
-            SearchItems(_activeInventory.Item1, _activeInventory.Item2, _searchBarWindow.SearchTerm);
+            _windowSystem?.Draw();
         }
 
-        private unsafe Tuple<IntPtr, GameInventoryType> FindInventory()
+        public static unsafe void ClearHighlights()
         {
-            // normal
-            IntPtr ptr = NormalInventoryHelper.GetNode();
-            AtkUnitBase* addon = (AtkUnitBase*)ptr;
-            if (addon != null && addon->IsVisible)
-            {
-                return new Tuple<IntPtr, GameInventoryType>((IntPtr)addon, GameInventoryType.Normal);
-            }
-
-            // expanded
-            ptr = LargeInventoryHelper.GetNode();
-            addon = (AtkUnitBase*)ptr;
-            if (addon != null && addon->IsVisible)
-            {
-                return new Tuple<IntPtr, GameInventoryType>((IntPtr)addon, GameInventoryType.Large);
-            }
-
-            // all
-            ptr = LargestInventoryHelper.GetNode();
-            addon = (AtkUnitBase*)ptr;
-            if (addon != null && addon->IsVisible)
-            {
-                return new Tuple<IntPtr, GameInventoryType>((IntPtr)addon, GameInventoryType.Largest);
-            }
-
-            // none
-            return new Tuple<IntPtr, GameInventoryType>(IntPtr.Zero, GameInventoryType.None);
-        }
-
-        private unsafe void SearchItems(IntPtr addon, GameInventoryType type, string searchTerm)
-        {
-            List<List<bool>>? results = null;
-            if (searchTerm.Length > 1)
-            {
-                results = FindItems(searchTerm);
-            }
-
-            switch (type)
-            {
-                case GameInventoryType.Normal: NormalInventoryHelper.HighlightItems(addon, results); break;
-                case GameInventoryType.Large: LargeInventoryHelper.HighlightItems(addon, results); break;
-                case GameInventoryType.Largest: LargestInventoryHelper.HighlightItems(results); break;
-            }
-        }
-
-        public unsafe List<List<bool>> FindItems(string searchTerm)
-        {
-            List<List<bool>> results = new List<List<bool>>(_itemsMap);
-
-            string text = searchTerm.ToUpper();
-            List<InventoryItem> items = InventoryMonitor.GetSpecificInventory(CharacterMonitor.ActiveCharacter, InventoryCategory.CharacterBags);
-
-            foreach (InventoryItem item in items)
-            {
-                bool highlight = false;
-                if (item.Item != null)
-                {
-                    highlight = item.Item.Name.ToString().ToUpper().Contains(text);
-                }
-
-                results[(int)item.SortedContainer][34 - item.SortedSlotIndex] = highlight;
-            }
-
-            return results;
-        }
-
-        private static unsafe void ClearNodeHighlights()
-        {
-            IntPtr normalInventory = NormalInventoryHelper.GetNode();
-            if (normalInventory != IntPtr.Zero)
-            {
-                NormalInventoryHelper.HighlightItems(normalInventory, null);
-                NormalInventoryHelper.HighlightTabs(normalInventory, null, true);
-            }
-
-            IntPtr largeInventory = LargeInventoryHelper.GetNode();
-            if (largeInventory != IntPtr.Zero)
-            {
-                LargeInventoryHelper.HighlightItems(largeInventory, null);
-                LargeInventoryHelper.HighlightTabs(largeInventory, null, true);
-            }
-
-            IntPtr largestInventory = LargestInventoryHelper.GetNode();
-            if (largestInventory != IntPtr.Zero)
-            {
-                LargestInventoryHelper.HighlightItems(null);
-            }
-        }
-
-        public static unsafe void ClearTabHighlights()
-        {
-            IntPtr normalInventory = NormalInventoryHelper.GetNode();
-            if (normalInventory != IntPtr.Zero)
-            {
-                NormalInventoryHelper.HighlightTabs(normalInventory, null, true);
-            }
-
-            IntPtr largeInventory = LargeInventoryHelper.GetNode();
-            if (largeInventory != IntPtr.Zero)
-            {
-                LargeInventoryHelper.HighlightTabs(largeInventory, null, true);
-            }
+            _manager.ClearHighlights();
         }
 
         private void OpenConfigUi()
@@ -312,7 +191,7 @@ namespace InventorySearchBar
                 return;
             }
 
-            ClearNodeHighlights();
+            ClearHighlights();
 
             KeyboardHelper.Instance?.Dispose();
 
@@ -327,10 +206,12 @@ namespace InventorySearchBar
             GameInterface.Dispose();
 
             _windowSystem.RemoveAllWindows();
+            _manager.Dispose();
 
             CommandManager.RemoveHandler("/inventorysearchbar");
             CommandManager.RemoveHandler("/isb");
 
+            Framework.Update -= Update;
             UiBuilder.Draw -= Draw;
             UiBuilder.OpenConfigUi -= OpenConfigUi;
         }

@@ -40,7 +40,7 @@ namespace InventorySearchBar
                 {
                     if (!Plugin.Settings.HightlightTabs)
                     {
-                        Plugin.ClearTabHighlights();
+                        Plugin.ClearHighlights();
                     }
                 }
                 if (ImGui.IsItemHovered())
