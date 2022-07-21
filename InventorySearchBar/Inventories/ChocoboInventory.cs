@@ -35,4 +35,9 @@ namespace InventorySearchBar.Inventories
             UpdateGridHighlights(_node, 8, 1); // right grid
         }
     }
+
+    internal class ChocoboInventory2 : ChocoboInventory
+    {
+        public override string AddonName => "InventoryBuddy2";
+    }
 }
