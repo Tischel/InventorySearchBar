@@ -1,10 +1,6 @@
-﻿using Dalamud.Interface;
-using Dalamud.Interface.Windowing;
-using ImGuiNET;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Numerics;
 
 namespace InventorySearchBar.Inventories
 {
@@ -20,7 +16,8 @@ namespace InventorySearchBar.Inventories
                 new NormalInventory(),
                 new LargeInventory(),
                 new LargestInventory(),
-                new ChocoboInventory()
+                new ChocoboInventory(),
+                new RetainerInventory()
             };
         }
 

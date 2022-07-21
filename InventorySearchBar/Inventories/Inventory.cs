@@ -1,9 +1,7 @@
-﻿using FFXIVClientStructs.FFXIV.Component.GUI;
+﻿using CriticalCommonLib.Models;
+using FFXIVClientStructs.FFXIV.Component.GUI;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace InventorySearchBar.Inventories
 {
@@ -18,6 +16,12 @@ namespace InventorySearchBar.Inventories
 
         protected List<List<bool>> _emptyFilter = null!;
         protected List<List<bool>>? _filter = null!;
+
+        protected abstract ulong CharacterId { get; }
+        protected abstract InventoryCategory Category { get; }
+        protected abstract int FirstBagOffset { get; }
+
+        protected const int kGridItemCount = 35;
 
         public bool IsVisible => _node != null && _node->IsVisible;
         public bool IsFocused()
@@ -36,7 +40,39 @@ namespace InventorySearchBar.Inventories
             _addon = Plugin.GameGui.GetAddonByName(AddonName, 1);
         }
 
-        public abstract void ApplyFilter(string searchTerm);
+        public void ApplyFilter(string searchTerm)
+        {
+            if (searchTerm.Length < 1)
+            {
+                _filter = null;
+                return;
+            }
+
+            _filter = new List<List<bool>>(_emptyFilter);
+
+            string text = searchTerm.ToUpper();
+            List<InventoryItem> items = Plugin.InventoryMonitor.GetSpecificInventory(CharacterId, Category);
+
+            foreach (InventoryItem item in items)
+            {
+                bool highlight = false;
+                if (item.Item != null)
+                {
+                    highlight = item.Item.Name.ToString().ToUpper().Contains(text);
+                }
+
+                int bagIndex = (int)item.SortedContainer - FirstBagOffset;
+                if (_filter.Count > bagIndex)
+                {
+                    List<bool> bag = _filter[bagIndex];
+                    int slot = kGridItemCount - 1 - item.SortedSlotIndex;
+                    if (bag.Count > slot)
+                    {
+                        bag[slot] = highlight;
+                    }
+                }
+            }
+        }
 
         public void UpdateHighlights()
         {
@@ -50,8 +86,6 @@ namespace InventorySearchBar.Inventories
             _filter = null;
             InternalUpdateHighlights(true);
         }
-
-        protected const int kGridItemCount = 35;
 
         protected unsafe void UpdateGridHighlights(AtkUnitBase* grid, int startIndex, int bagIndex, int count = kGridItemCount)
         {
@@ -88,6 +122,13 @@ namespace InventorySearchBar.Inventories
             if (tab->UldManager.NodeListCount < 2) { return false; }
 
             return tab->UldManager.NodeList[2]->IsVisible;
+        }
+
+        public static unsafe bool GetSmallTabEnabled(AtkComponentBase* tab)
+        {
+            if (tab->UldManager.NodeListCount < 1) { return false; }
+
+            return tab->UldManager.NodeList[1]->IsVisible;
         }
     }
 }

@@ -23,53 +23,34 @@ namespace InventorySearchBar.Inventories
 
         public unsafe void HighlightTabs(bool forced = false)
         {
-            if (_node->UldManager.NodeListCount < 14) { return; }
-
             if (!Plugin.Settings.HightlightTabs && !forced) { return; }
 
-            AtkResNode* firstBagTab = _node->UldManager.NodeList[14];
-            bool resultsInFirstTab = _filter != null && _filter[0].Any(b => b == true);
+            for (int i = 0; i < 4; i++)
+            {
+                UpdateTabHighlight(i);
+            }
+        }
+
+        private unsafe void UpdateTabHighlight(int index)
+        {
+            if (_node == null || _node->UldManager.NodeListCount < 14) { return; }
+
+            AtkResNode* firstBagTab = _node->UldManager.NodeList[14 - index];
+            bool resultsInFirstTab = _filter != null && _filter[index].Any(b => b == true);
             SetTabHighlight(firstBagTab, resultsInFirstTab);
-
-            AtkResNode* secondBagTab = _node->UldManager.NodeList[13];
-            bool resultsInSecondTab = _filter != null && _filter[1].Any(b => b == true);
-            SetTabHighlight(secondBagTab, resultsInSecondTab);
-
-            AtkResNode* thirdBagTab = _node->UldManager.NodeList[12];
-            bool resultsInThirdTab = _filter != null && _filter[2].Any(b => b == true);
-            SetTabHighlight(thirdBagTab, resultsInThirdTab);
-
-            AtkResNode* fourthBagTab = _node->UldManager.NodeList[11];
-            bool resultsInFourthTab = _filter != null && _filter[3].Any(b => b == true);
-            SetTabHighlight(fourthBagTab, resultsInFourthTab);
         }
 
         public unsafe int GetGridOffset()
         {
-            if (_node->UldManager.NodeListCount < 14) { return -1; }
+            if (_node == null || _node->UldManager.NodeListCount < 14) { return -1; }
 
-            AtkResNode* firstBagTab = _node->UldManager.NodeList[14];
-            if (GetTabEnabled(firstBagTab->GetComponent()))
+            for (int i = 0; i < 4; i++)
             {
-                return 0;
-            }
-
-            AtkResNode* secondBagTab = _node->UldManager.NodeList[13];
-            if (GetTabEnabled(secondBagTab->GetComponent()))
-            {
-                return 1;
-            }
-
-            AtkResNode* thirdBagTab = _node->UldManager.NodeList[12];
-            if (GetTabEnabled(thirdBagTab->GetComponent()))
-            {
-                return 2;
-            }
-
-            AtkResNode* fourthBagTab = _node->UldManager.NodeList[11];
-            if (GetTabEnabled(fourthBagTab->GetComponent()))
-            {
-                return 3;
+                AtkResNode* bagNode = _node->UldManager.NodeList[14 - i];
+                if (GetTabEnabled(bagNode->GetComponent()))
+                {
+                    return i;
+                }
             }
 
             return -1;
