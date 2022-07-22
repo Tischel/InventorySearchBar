@@ -20,8 +20,7 @@ namespace InventorySearchBar.Inventories
         protected abstract ulong CharacterId { get; }
         protected abstract InventoryCategory Category { get; }
         protected abstract int FirstBagOffset { get; }
-
-        protected const int kGridItemCount = 35;
+        protected abstract int GridItemCount { get; }
 
         public bool IsVisible => _node != null && _node->IsVisible;
         public bool IsFocused()
@@ -40,7 +39,7 @@ namespace InventorySearchBar.Inventories
             _addon = Plugin.GameGui.GetAddonByName(AddonName, 1);
         }
 
-        public void ApplyFilter(string searchTerm)
+        public virtual void ApplyFilter(string searchTerm)
         {
             if (searchTerm.Length < 1)
             {
@@ -49,29 +48,42 @@ namespace InventorySearchBar.Inventories
             }
 
             _filter = new List<List<bool>>(_emptyFilter);
-
             string text = searchTerm.ToUpper();
-            List<InventoryItem> items = Plugin.InventoryMonitor.GetSpecificInventory(CharacterId, Category);
+
+            List<InventoryItem> items = GetSortedItems();
 
             foreach (InventoryItem item in items)
             {
-                bool highlight = false;
-                if (item.Item != null)
+                try
                 {
-                    highlight = item.Item.Name.ToString().ToUpper().Contains(text);
-                }
-
-                int bagIndex = (int)item.SortedContainer - FirstBagOffset;
-                if (_filter.Count > bagIndex)
-                {
-                    List<bool> bag = _filter[bagIndex];
-                    int slot = kGridItemCount - 1 - item.SortedSlotIndex;
-                    if (bag.Count > slot)
+                    bool highlight = false;
+                    if (item.Item != null)
                     {
-                        bag[slot] = highlight;
+                        highlight = item.Item.Name.ToString().ToUpper().Contains(text);
+                    }
+
+                    int bagIndex = (int)item.SortedContainer - FirstBagOffset;
+                    if (_filter.Count > bagIndex)
+                    {
+                        List<bool> bag = _filter[bagIndex];
+                        int slot = GridItemCount - 1 - item.SortedSlotIndex;
+                        if (bag.Count > slot)
+                        {
+                            bag[slot] = highlight;
+                        }
                     }
                 }
+                catch { }
+                //catch (Exception e)
+                //{
+                //  PluginLog.Log(e.Message);
+                //}
             }
+        }
+
+        protected virtual List<InventoryItem> GetSortedItems()
+        {
+            return Plugin.InventoryMonitor.GetSpecificInventory(CharacterId, Category);
         }
 
         public void UpdateHighlights()
@@ -87,11 +99,11 @@ namespace InventorySearchBar.Inventories
             InternalUpdateHighlights(true);
         }
 
-        protected unsafe void UpdateGridHighlights(AtkUnitBase* grid, int startIndex, int bagIndex, int count = kGridItemCount)
+        protected unsafe void UpdateGridHighlights(AtkUnitBase* grid, int startIndex, int bagIndex)
         {
             if (grid == null) { return; }
 
-            for (int j = startIndex; j < startIndex + count; j++)
+            for (int j = startIndex; j < startIndex + GridItemCount; j++)
             {
                 bool highlight = true;
                 if (_filter != null && _filter[bagIndex].Count > j - startIndex)
@@ -105,9 +117,9 @@ namespace InventorySearchBar.Inventories
 
         protected static unsafe void SetNodeHighlight(AtkResNode* node, bool highlight)
         {
-            node->MultiplyRed = highlight ? (byte)100 : (byte)20;
-            node->MultiplyGreen = highlight ? (byte)100 : (byte)20;
-            node->MultiplyBlue = highlight ? (byte)100 : (byte)20;
+            node->MultiplyRed = highlight || !node->IsVisible ? (byte)100 : (byte)20;
+            node->MultiplyGreen = highlight || !node->IsVisible ? (byte)100 : (byte)20;
+            node->MultiplyBlue = highlight || !node->IsVisible ? (byte)100 : (byte)20;
         }
 
         public static unsafe void SetTabHighlight(AtkResNode* tab, bool highlight)

@@ -14,9 +14,8 @@ Any items containing the searched text in their name will be highlighted.
 - Character Inventory
 - Chocobo Saddle
 - Retainer Inventory
+- Armoury
 
 ## Known Issues
 
-- Armoury not yet supported
 - Premium Cocobo Saddle not yet supported
-

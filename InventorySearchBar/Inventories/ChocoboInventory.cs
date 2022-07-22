@@ -10,6 +10,7 @@ namespace InventorySearchBar.Inventories
         protected override ulong CharacterId => Plugin.CharacterMonitor.ActiveCharacter;
         protected override InventoryCategory Category => InventoryCategory.CharacterSaddleBags;
         protected override int FirstBagOffset => (int)InventoryType.SaddleBag0;
+        protected override int GridItemCount => 35;
 
         public ChocoboInventory()
         {
@@ -17,8 +18,8 @@ namespace InventorySearchBar.Inventories
             _emptyFilter = new List<List<bool>>();
             for (int i = 0; i < 2; i++)
             {
-                List<bool> list = new List<bool>(kGridItemCount);
-                for (int j = 0; j < kGridItemCount; j++)
+                List<bool> list = new List<bool>(GridItemCount);
+                for (int j = 0; j < GridItemCount; j++)
                 {
                     list.Add(false);
                 }

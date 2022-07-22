@@ -18,7 +18,8 @@ namespace InventorySearchBar.Inventories
                 new LargestInventory(),
                 new ChocoboInventory(),
                 new ChocoboInventory2(),
-                new RetainerInventory()
+                new RetainerInventory(),
+                new ArmouryInventory()
             };
         }
 
