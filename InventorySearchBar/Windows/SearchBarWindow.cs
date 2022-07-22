@@ -4,7 +4,7 @@ using ImGuiNET;
 using System;
 using System.Numerics;
 
-namespace InventorySearchBar
+namespace InventorySearchBar.Windows
 {
     public class SearchBarWindow : Window
     {

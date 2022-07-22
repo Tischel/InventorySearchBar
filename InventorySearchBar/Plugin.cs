@@ -13,6 +13,7 @@ using Dalamud.Plugin;
 using InventorySearchBar.Filters;
 using InventorySearchBar.Helpers;
 using InventorySearchBar.Inventories;
+using InventorySearchBar.Windows;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
@@ -39,6 +40,7 @@ namespace InventorySearchBar
 
         private static WindowSystem _windowSystem = null!;
         private static SettingsWindow _settingsWindow = null!;
+        private static FiltersWindow _filtersWindow = null!;
         private static SearchBarWindow _searchBarWindow = null!;
 
         private static OdrScanner OdrScanner { get; set; } = null!;
@@ -49,7 +51,7 @@ namespace InventorySearchBar
         private static InventoriesManager _manager = null!;
         public static bool IsKeybindActive = false;
 
-        private static List<Filter> _filters = new List<Filter>()
+        public static List<Filter> Filters = new List<Filter>()
         {
             new NameFilter(),
             new JobFilter(),
@@ -143,11 +145,18 @@ namespace InventorySearchBar
         private void CreateWindows()
         {
             _settingsWindow = new SettingsWindow("Inventory Search Bar v" + Version);
+            _filtersWindow = new FiltersWindow("Inventory Search Bar Filters");
             _searchBarWindow = new SearchBarWindow("InventorySearchBar");
 
             _windowSystem = new WindowSystem("InventorySearchBar_Windows");
             _windowSystem.AddWindow(_settingsWindow);
+            _windowSystem.AddWindow(_filtersWindow);
             _windowSystem.AddWindow(_searchBarWindow);
+        }
+
+        public static void OpenFiltersWindow()
+        {
+            _filtersWindow.IsOpen = true;
         }
 
         private unsafe void Update(Framework framework)
@@ -177,7 +186,7 @@ namespace InventorySearchBar
                 _searchBarWindow.InventoryAddon = _manager.ActiveInventory.Addon;
                 _searchBarWindow.IsOpen = true;
 
-                _manager.ActiveInventory.ApplyFilters(_filters, _searchBarWindow.SearchTerm);
+                _manager.ActiveInventory.ApplyFilters(Filters, _searchBarWindow.SearchTerm);
                 _manager.ActiveInventory.UpdateHighlights();
             }
 

@@ -2,8 +2,9 @@
 using Dalamud.Interface.Windowing;
 using ImGuiNET;
 using System.Numerics;
+using TPie.Helpers;
 
-namespace InventorySearchBar
+namespace InventorySearchBar.Windows
 {
     public class SettingsWindow : Window
     {
@@ -16,7 +17,7 @@ namespace InventorySearchBar
                 | ImGuiWindowFlags.NoResize
                 | ImGuiWindowFlags.NoScrollWithMouse;
 
-            Size = new Vector2(236, 400);
+            Size = new Vector2(236, 432);
         }
 
         public override void Draw()
@@ -25,16 +26,10 @@ namespace InventorySearchBar
             ImGui.BeginChild("##General", new Vector2(220 * _scale, 94 * _scale), true);
             {
                 ImGui.Checkbox("Automatically clear search", ref Plugin.Settings.AutoClear);
-                if (ImGui.IsItemHovered())
-                {
-                    ImGui.SetTooltip("If enabled, the search bar will be emptied every time the inventory is opened.");
-                }
+                DrawHelper.SetTooltip("If enabled, the search bar will be emptied every time the inventory is opened.");
 
                 ImGui.Checkbox("Automatically focus search bar", ref Plugin.Settings.AutoFocus);
-                if (ImGui.IsItemHovered())
-                {
-                    ImGui.SetTooltip("If enabled, the search bar will focused every time the inventory is opened.");
-                }
+                DrawHelper.SetTooltip("If enabled, the search bar will focused every time the inventory is opened.");
 
                 if (ImGui.Checkbox("Highlight tabs", ref Plugin.Settings.HightlightTabs))
                 {
@@ -43,10 +38,7 @@ namespace InventorySearchBar
                         Plugin.ClearHighlights();
                     }
                 }
-                if (ImGui.IsItemHovered())
-                {
-                    ImGui.SetTooltip("If enabled, the inventory tabs will be highlighted if they contain an item that satisfies the search.");
-                }
+                DrawHelper.SetTooltip("If enabled, the inventory tabs will be highlighted if they contain an item that satisfies the search.");
             }
             ImGui.EndChild();
 
@@ -58,16 +50,10 @@ namespace InventorySearchBar
                 Plugin.Settings.Keybind.Draw("ISB", 200);
 
                 ImGui.Checkbox("Keybind only", ref Plugin.Settings.KeybindOnly);
-                if (ImGui.IsItemHovered())
-                {
-                    ImGui.SetTooltip("When enabled, the search bar will only appear when the keybind is used.");
-                }
+                DrawHelper.SetTooltip("When enabled, the search bar will only appear when the keybind is used.");
 
                 ImGui.Checkbox("Keybind Passthrough", ref Plugin.Settings.KeybindPassthrough);
-                if (ImGui.IsItemHovered())
-                {
-                    ImGui.SetTooltip("When enabled, the plugin wont prevent the game from receiving the key presses for the keybind.");
-                }
+                DrawHelper.SetTooltip("When enabled, the plugin wont prevent the game from receiving the key presses for the keybind.");
             }
             ImGui.EndChild();
 
@@ -80,6 +66,14 @@ namespace InventorySearchBar
                 ImGui.DragInt("Search Bar Width", ref Plugin.Settings.SearchBarWidth, 1, 50, 500);
                 ImGui.ColorEdit4("Search Bar Background Color", ref Plugin.Settings.SearchBarBackgroundColor, ImGuiColorEditFlags.NoInputs);
                 ImGui.ColorEdit4("Search Bar Text Color", ref Plugin.Settings.SearchBarTextColor, ImGuiColorEditFlags.NoInputs);
+            }
+            ImGui.EndChild();
+
+            ImGui.Spacing();
+
+            if (ImGui.Button("Edit Filters", new Vector2(220, 24)))
+            {
+                Plugin.OpenFiltersWindow();
             }
         }
     }

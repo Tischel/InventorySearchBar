@@ -6,10 +6,32 @@ namespace InventorySearchBar.Filters
 {
     internal class LevelFilter : Filter
     {
-        protected override bool Enabled => Plugin.Settings.LevelFilterEnabled;
-        protected override bool NeedsTag => Plugin.Settings.LevelFilterRequireTag;
-        protected override string Tag => Plugin.Settings.LevelFilterTag.ToUpper();
-        protected override string AbbreviatedTag => Plugin.Settings.LevelFilterAbbreviatedTag.ToUpper();
+        public override string Name => "Level";
+        public override string HelpText => "Allow to filter items by checking if their level requirement.\nExamples: '" + Plugin.Settings.LevelFilterTag + ":60', '" + Plugin.Settings.LevelFilterAbbreviatedTag + ":>=70', '" + Plugin.Settings.LevelFilterTag + ":=90'.";
+
+        protected override bool Enabled
+        {
+            get => Plugin.Settings.LevelFilterEnabled;
+            set => Plugin.Settings.LevelFilterEnabled = value;
+        }
+
+        protected override bool NeedsTag
+        {
+            get => Plugin.Settings.LevelFilterRequireTag;
+            set => Plugin.Settings.LevelFilterRequireTag = value;
+        }
+
+        protected override string Tag
+        {
+            get => Plugin.Settings.LevelFilterTag;
+            set => Plugin.Settings.LevelFilterTag = value;
+        }
+
+        protected override string AbbreviatedTag
+        {
+            get => Plugin.Settings.LevelFilterAbbreviatedTag;
+            set => Plugin.Settings.LevelFilterAbbreviatedTag = value;
+        }
 
         private enum ComparisonType
         {
