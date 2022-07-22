@@ -10,9 +10,11 @@ using Dalamud.Game.Gui;
 using Dalamud.Interface;
 using Dalamud.Interface.Windowing;
 using Dalamud.Plugin;
+using InventorySearchBar.Filters;
 using InventorySearchBar.Helpers;
 using InventorySearchBar.Inventories;
 using System;
+using System.Collections.Generic;
 using System.Reflection;
 
 namespace InventorySearchBar
@@ -46,6 +48,14 @@ namespace InventorySearchBar
 
         private static InventoriesManager _manager = null!;
         public static bool IsKeybindActive = false;
+
+        private static List<Filter> _filters = new List<Filter>()
+        {
+            new NameFilter(),
+            new JobFilter(),
+            new Filters.TypeFilter(),
+            new LevelFilter()
+        };
 
         public Plugin(
             ClientState clientState,
@@ -167,7 +177,7 @@ namespace InventorySearchBar
                 _searchBarWindow.InventoryAddon = _manager.ActiveInventory.Addon;
                 _searchBarWindow.IsOpen = true;
 
-                _manager.ActiveInventory.ApplyFilter(_searchBarWindow.SearchTerm);
+                _manager.ActiveInventory.ApplyFilters(_filters, _searchBarWindow.SearchTerm);
                 _manager.ActiveInventory.UpdateHighlights();
             }
 

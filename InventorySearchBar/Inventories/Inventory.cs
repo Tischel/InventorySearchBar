@@ -1,5 +1,7 @@
 ﻿using CriticalCommonLib.Models;
 using FFXIVClientStructs.FFXIV.Component.GUI;
+using InventorySearchBar.Filters;
+using Lumina.Excel.GeneratedSheets;
 using System;
 using System.Collections.Generic;
 
@@ -39,29 +41,47 @@ namespace InventorySearchBar.Inventories
             _addon = Plugin.GameGui.GetAddonByName(AddonName, 1);
         }
 
-        public virtual void ApplyFilter(string searchTerm)
+        public virtual void ApplyFilters(List<Filter> filters, string text)
         {
-            if (searchTerm.Length < 1)
+            if (text.Length < 2)
             {
                 _filter = null;
                 return;
             }
 
             _filter = new List<List<bool>>(_emptyFilter);
-            string text = searchTerm.ToUpper();
+            string[] searchTerms = text.ToUpper().Split(Plugin.Settings.SearchTermsSeparatorCharacter);
 
+            // get items
             List<InventoryItem> items = GetSortedItems();
 
             foreach (InventoryItem item in items)
             {
                 try
                 {
+                    // apply filters
                     bool highlight = false;
+
                     if (item.Item != null)
                     {
-                        highlight = item.Item.Name.ToString().ToUpper().Contains(text);
+                        int successCount = 0;
+                        foreach (string term in searchTerms)
+                        {
+                            foreach (Filter filter in filters)
+                            {
+                                if (filter.FilterItem(item.Item, term))
+                                {
+                                    successCount++;
+                                    break;
+                                }
+                            }
+                        }
+
+                        // all search terms need to be found
+                        highlight = successCount == searchTerms.Length;
                     }
 
+                    // map
                     int bagIndex = (int)item.SortedContainer - FirstBagOffset;
                     if (_filter.Count > bagIndex)
                     {

@@ -55,8 +55,10 @@ namespace InventorySearchBar
             if (InventoryAddon != IntPtr.Zero)
             {
                 AtkUnitBase* inventory = (AtkUnitBase*)InventoryAddon;
+                AtkCollisionNode* window = inventory->WindowCollisionNode;
+                if (window == null) { return; }
 
-                float width = inventory->WindowCollisionNode->AtkResNode.Width * inventory->Scale;
+                float width = window->AtkResNode.Width * inventory->Scale;
                 float x = inventory->X + width / 2f - Settings.SearchBarWidth / 2f;
                 float y = inventory->Y + 13 * inventory->Scale;
 

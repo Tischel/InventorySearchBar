@@ -8,17 +8,44 @@ namespace InventorySearchBar
 {
     public class Settings
     {
+        // general
         public bool AutoFocus = false;
         public bool AutoClear = true;
         public bool HightlightTabs = true;
 
+        // keybind
         public KeyBind Keybind = new KeyBind(70, true, false, false); // ctrl + f
         public bool KeybindOnly = true;
         public bool KeybindPassthrough = false;
 
+        // style
         public int SearchBarWidth = 100;
         public Vector4 SearchBarBackgroundColor = new Vector4(0.1f, 0.1f, 0.1f, 1);
         public Vector4 SearchBarTextColor = Vector4.One;
+
+        // filters
+        public string TagSeparatorCharacter = ":";
+        public string SearchTermsSeparatorCharacter = " ";
+
+        public bool NameFilterEnabled = true;
+        public bool NameFilterRequireTag = false;
+        public string NameFilterTag = "name";
+        public string NameFilterAbbreviatedTag = "n";
+
+        public bool TypeFilterEnabled = true;
+        public bool TypeFilterRequireTag = true;
+        public string TypeFilterTag = "type";
+        public string TypeFilterAbbreviatedTag = "t";
+
+        public bool JobFilterEnabled = true;
+        public bool JobFilterRequireTag = true;
+        public string JobFilterTag = "job";
+        public string JobFilterAbbreviatedTag = "j";
+
+        public bool LevelFilterEnabled = true;
+        public bool LevelFilterRequireTag = true;
+        public string LevelFilterTag = "level";
+        public string LevelFilterAbbreviatedTag = "l";
 
         #region load / save
         private static string JsonPath = Path.Combine(Plugin.PluginInterface.GetPluginConfigDirectory(), "Settings.json");

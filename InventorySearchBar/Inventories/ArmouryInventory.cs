@@ -1,5 +1,6 @@
 ﻿using CriticalCommonLib.Enums;
 using CriticalCommonLib.Models;
+using InventorySearchBar.Filters;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -44,11 +45,11 @@ namespace InventorySearchBar.Inventories
             _emptyFilter.Add(list);
         }
 
-        public override void ApplyFilter(string searchTerm)
+        public override void ApplyFilters(List<Filter> filters, string searchTerm)
         {
             _currentBag = GetCurrentBag();
 
-            base.ApplyFilter(searchTerm);
+            base.ApplyFilters(filters, searchTerm);
         }
 
         private unsafe int GetCurrentBag()
