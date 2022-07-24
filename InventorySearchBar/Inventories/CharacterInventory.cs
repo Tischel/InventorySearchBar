@@ -12,6 +12,7 @@ namespace InventorySearchBar.Inventories
         protected override InventoryCategory Category => InventoryCategory.CharacterBags;
         protected override int FirstBagOffset => (int)InventoryType.Bag0;
         protected override int GridItemCount => 35;
+        public override int OffsetX => 0;
 
         public CharacterInventory()
         {

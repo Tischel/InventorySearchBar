@@ -13,6 +13,7 @@ namespace InventorySearchBar.Inventories
         protected override InventoryCategory Category => InventoryCategory.CharacterArmoryChest;
         protected override int FirstBagOffset => _currentBag;
         protected override int GridItemCount => 50;
+        public override int OffsetX => Plugin.Settings.ArmouryInventoryOffset;
 
         private int _currentBag = (int)InventoryType.ArmoryMain;
 

@@ -178,12 +178,12 @@ namespace InventorySearchBar
 
             if (_manager.ActiveInventory == null)
             {
-                _searchBarWindow.InventoryAddon = IntPtr.Zero;
+                _searchBarWindow.Inventory = null;
                 _searchBarWindow.IsOpen = false;
             }
             else
             {
-                _searchBarWindow.InventoryAddon = _manager.ActiveInventory.Addon;
+                _searchBarWindow.Inventory = _manager.ActiveInventory;
                 _searchBarWindow.IsOpen = true;
 
                 _manager.ActiveInventory.ApplyFilters(Filters, _searchBarWindow.SearchTerm);

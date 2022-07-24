@@ -14,6 +14,7 @@ namespace InventorySearchBar.Inventories
         protected override InventoryCategory Category => InventoryCategory.RetainerBags;
         protected override int FirstBagOffset => (int)InventoryType.RetainerBag0;
         protected override int GridItemCount => 35;
+        public override int OffsetX => Plugin.Settings.RetainerInventoryOffset;
 
         public RetainerInventory()
         {

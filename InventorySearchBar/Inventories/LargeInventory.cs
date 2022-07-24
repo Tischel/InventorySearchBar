@@ -7,6 +7,7 @@ namespace InventorySearchBar.Inventories
     internal class LargeInventory : CharacterInventory
     {
         public override string AddonName => "InventoryLarge";
+        public override int OffsetX => Plugin.Settings.LargeInventoryOffset;
 
         protected override unsafe void InternalUpdateHighlights(bool forced = false)
         {

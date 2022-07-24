@@ -28,7 +28,7 @@ namespace InventorySearchBar.Windows
                 return;
             }
 
-            if (ImGui.BeginTabItem("General##ISB_Settings"))
+            if (ImGui.BeginTabItem("General##ISB_Filters"))
             {
                 DrawGeneralTab();
                 ImGui.EndTabItem();

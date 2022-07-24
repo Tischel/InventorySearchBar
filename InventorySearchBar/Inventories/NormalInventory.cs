@@ -7,6 +7,7 @@ namespace InventorySearchBar.Inventories
     internal class NormalInventory : CharacterInventory
     {
         public override string AddonName => "Inventory";
+        public override int OffsetX => Plugin.Settings.NormalInventoryOffset;
 
         protected override unsafe void InternalUpdateHighlights(bool forced = false)
         {

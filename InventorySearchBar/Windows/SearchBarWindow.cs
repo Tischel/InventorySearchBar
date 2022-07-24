@@ -1,6 +1,7 @@
 ﻿using Dalamud.Interface.Windowing;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;
+using InventorySearchBar.Inventories;
 using System;
 using System.Numerics;
 
@@ -9,7 +10,7 @@ namespace InventorySearchBar.Windows
     public class SearchBarWindow : Window
     {
         public string SearchTerm = "";
-        public IntPtr InventoryAddon = IntPtr.Zero;
+        public Inventory? Inventory = null;
         private bool _needsFocus = false;
         private bool _canShow = false;
 
@@ -52,14 +53,14 @@ namespace InventorySearchBar.Windows
             ImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, new Vector2(0, 0));
             ImGui.PushStyleVar(ImGuiStyleVar.WindowBorderSize, 0);
 
-            if (InventoryAddon != IntPtr.Zero)
+            if (Inventory != null && Inventory.Addon != IntPtr.Zero)
             {
-                AtkUnitBase* inventory = (AtkUnitBase*)InventoryAddon;
+                AtkUnitBase* inventory = (AtkUnitBase*)Inventory.Addon;
                 AtkCollisionNode* window = inventory->WindowCollisionNode;
                 if (window == null) { return; }
 
                 float width = window->AtkResNode.Width * inventory->Scale;
-                float x = inventory->X + width / 2f - Settings.SearchBarWidth / 2f;
+                float x = inventory->X + width / 2f - Settings.SearchBarWidth / 2f + Inventory.OffsetX;
                 float y = inventory->Y + 13 * inventory->Scale;
 
                 Position = new Vector2(x, y);

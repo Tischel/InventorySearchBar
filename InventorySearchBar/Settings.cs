@@ -23,6 +23,14 @@ namespace InventorySearchBar
         public Vector4 SearchBarBackgroundColor = new Vector4(0.1f, 0.1f, 0.1f, 1);
         public Vector4 SearchBarTextColor = Vector4.One;
 
+        // offsets
+        public int NormalInventoryOffset = 20;
+        public int LargeInventoryOffset = 0;
+        public int LargestInventoryOffset = 0;
+        public int ChocoboInventoryOffset = 0;
+        public int RetainerInventoryOffset = 18;
+        public int ArmouryInventoryOffset = 30;
+
         // filters
         public string TagSeparatorCharacter = ":";
         public string SearchTermsSeparatorCharacter = " ";

@@ -11,6 +11,7 @@ namespace InventorySearchBar.Inventories
         protected override InventoryCategory Category => InventoryCategory.CharacterSaddleBags;
         protected override int FirstBagOffset => (int)InventoryType.SaddleBag0;
         protected override int GridItemCount => 35;
+        public override int OffsetX => Plugin.Settings.ChocoboInventoryOffset;
 
         public ChocoboInventory()
         {

@@ -56,13 +56,13 @@ namespace InventorySearchBar
             return active;
         }
 
-        public bool Draw(string id, float width)
+        public bool Draw(float width)
         {
             ImGuiIOPtr io = ImGui.GetIO();
             string dispKey = ToString();
 
             ImGui.PushItemWidth(width);
-            ImGui.InputText($"##{id}_Keybind", ref dispKey, 200, ImGuiInputTextFlags.ReadOnly);
+            ImGui.InputText($"Keybind##InventorySearchBar", ref dispKey, 200, ImGuiInputTextFlags.ReadOnly);
             if (ImGui.IsItemHovered())
             {
                 ImGui.SetTooltip("Use this keybind to focus on the search bar. Backspace to clear.");

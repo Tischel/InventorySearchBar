@@ -7,12 +7,14 @@ using System.Collections.Generic;
 
 namespace InventorySearchBar.Inventories
 {
-    internal abstract unsafe class Inventory
+    public abstract unsafe class Inventory
     {
         public abstract string AddonName { get; }
 
         protected IntPtr _addon = IntPtr.Zero;
         public IntPtr Addon => _addon;
+
+        public abstract int OffsetX { get; }
 
         protected AtkUnitBase* _node => (AtkUnitBase*)_addon;
 
