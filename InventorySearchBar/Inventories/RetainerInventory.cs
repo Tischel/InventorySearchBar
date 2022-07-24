@@ -16,6 +16,9 @@ namespace InventorySearchBar.Inventories
         protected override int GridItemCount => 35;
         public override int OffsetX => Plugin.Settings.RetainerInventoryOffset;
 
+        protected int _tabCount = 5;
+        protected int _tabIndexStart = 12;
+
         public RetainerInventory()
         {
             // 5 grids of 35 items
@@ -49,28 +52,28 @@ namespace InventorySearchBar.Inventories
         {
             if (!Plugin.Settings.HightlightTabs && !forced) { return; }
 
-            for (int i = 0; i < 5; i++)
+            for (int i = 0; i < _tabCount; i++)
             {
                 UpdateTabHighlight(i);
             }
         }
 
-        private unsafe void UpdateTabHighlight(int index)
+        protected virtual unsafe void UpdateTabHighlight(int index)
         {
-            if (_node == null || _node->UldManager.NodeListCount < 12) { return; }
+            if (_node == null || _node->UldManager.NodeListCount < _tabIndexStart) { return; }
 
-            AtkResNode* firstBagTab = _node->UldManager.NodeList[12 - index];
-            bool resultsInFirstTab = _filter != null && _filter[index].Any(b => b == true);
-            SetTabHighlight(firstBagTab, resultsInFirstTab);
+            AtkResNode* tab = _node->UldManager.NodeList[_tabIndexStart - index];
+            bool resultsInTab = _filter != null && _filter[index].Any(b => b == true);
+            SetTabHighlight(tab, resultsInTab);
         }
 
-        public unsafe int GetGridOffset()
+        public virtual unsafe int GetGridOffset()
         {
-            if (_node == null || _node->UldManager.NodeListCount < 12) { return -1; }
+            if (_node == null || _node->UldManager.NodeListCount < _tabIndexStart) { return -1; }
 
-            for (int i = 0; i < 5; i++)
+            for (int i = 0; i < _tabCount; i++)
             {
-                AtkResNode* bagNode = _node->UldManager.NodeList[12 - i];
+                AtkResNode* bagNode = _node->UldManager.NodeList[_tabIndexStart - i];
                 if (GetSmallTabEnabled(bagNode->GetComponent()))
                 {
                     return i;

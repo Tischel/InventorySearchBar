@@ -9,6 +9,7 @@ namespace InventorySearchBar.Windows
     public class SettingsWindow : Window
     {
         private float _scale => ImGuiHelpers.GlobalScale;
+        private int _width = 236;
 
         public SettingsWindow(string name) : base(name)
         {
@@ -17,7 +18,7 @@ namespace InventorySearchBar.Windows
                 | ImGuiWindowFlags.NoResize
                 | ImGuiWindowFlags.NoScrollWithMouse;
 
-            Size = new Vector2(236, 228);
+            Size = new Vector2(_width, 196);
         }
 
         public override void Draw()
@@ -29,6 +30,7 @@ namespace InventorySearchBar.Windows
 
             if (ImGui.BeginTabItem("General##ISB_Settings"))
             {
+                Size = new Vector2(_width, 196);
                 ImGui.Spacing();
                 DrawGeneralTab();
                 ImGui.EndTabItem();
@@ -36,6 +38,7 @@ namespace InventorySearchBar.Windows
 
             if (ImGui.BeginTabItem("Keybind##ISB_Settings"))
             {
+                Size = new Vector2(_width, 148);
                 ImGui.Spacing();
                 DrawKeybindTab();
                 ImGui.EndTabItem();
@@ -43,6 +46,7 @@ namespace InventorySearchBar.Windows
 
             if (ImGui.BeginTabItem("Style##ISB_Settings"))
             {
+                Size = new Vector2(_width, 148);
                 ImGui.Spacing();
                 DrawStyleTab();
                 ImGui.EndTabItem();
@@ -50,6 +54,7 @@ namespace InventorySearchBar.Windows
 
             if (ImGui.BeginTabItem("Offsets##ISB_Settings"))
             {
+                Size = new Vector2(_width, 254);
                 ImGui.Spacing();
                 DrawOffsetsTab();
                 ImGui.EndTabItem();
@@ -75,8 +80,7 @@ namespace InventorySearchBar.Windows
             }
             DrawHelper.SetTooltip("If enabled, the inventory tabs will be highlighted if they contain an item that satisfies the search.");
 
-            ImGui.NewLine(); ImGui.NewLine();
-            ImGui.Spacing(); ImGui.Spacing();
+            ImGui.NewLine();
             if (ImGui.Button("Edit Filters", new Vector2(220, 24)))
             {
                 Plugin.OpenFiltersWindow();
@@ -112,6 +116,7 @@ namespace InventorySearchBar.Windows
             ImGui.DragInt("Largest Inventory", ref Plugin.Settings.LargestInventoryOffset, 0.5f, -500, 500);
             ImGui.DragInt("Chocobo Saddle", ref Plugin.Settings.ChocoboInventoryOffset, 0.5f, -500, 500);
             ImGui.DragInt("Retainer Inventory", ref Plugin.Settings.RetainerInventoryOffset, 0.5f, -500, 500);
+            ImGui.DragInt("Large Retainer Inventory", ref Plugin.Settings.LargeRetainerInventoryOffset, 0.5f, -500, 500);
             ImGui.DragInt("Armoury", ref Plugin.Settings.ArmouryInventoryOffset, 0.5f, -500, 500);
         }
     }

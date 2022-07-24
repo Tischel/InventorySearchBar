@@ -29,6 +29,7 @@ namespace InventorySearchBar
         public int LargestInventoryOffset = 0;
         public int ChocoboInventoryOffset = 0;
         public int RetainerInventoryOffset = 18;
+        public int LargeRetainerInventoryOffset = 0;
         public int ArmouryInventoryOffset = 30;
 
         // filters
