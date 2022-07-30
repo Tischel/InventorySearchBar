@@ -27,6 +27,8 @@ namespace InventorySearchBar.Windows
                 | ImGuiWindowFlags.NoSavedSettings;
 
             Size = new Vector2(Settings.SearchBarWidth, 24);
+
+            RespectCloseHotkey = false;
         }
 
         public override void OnOpen()
