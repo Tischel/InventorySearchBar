@@ -31,17 +31,7 @@ namespace InventorySearchBar.Inventories
                 inventory.UpdateAddonReference();
             }
 
-            ActiveInventory = null;
-            List<Inventory> visible = _inventories.Where(o => o.IsVisible).ToList();
-
-            if (visible.Count == 1)
-            {
-                ActiveInventory = visible[0];
-            }
-            else if (visible.Count > 1)
-            {
-                ActiveInventory = visible.FirstOrDefault(o => o.IsFocused());
-            }
+            ActiveInventory = _inventories.FirstOrDefault(o => o.IsVisible && o.IsFocused());
         }
 
         public void ClearHighlights()
