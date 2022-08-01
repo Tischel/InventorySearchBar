@@ -98,7 +98,7 @@ namespace InventorySearchBar
                 AssemblyLocation = Assembly.GetExecutingAssembly().Location;
             }
 
-            Version = Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "0.1.0.0";
+            Version = Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "0.2.0.1";
 
             Framework.Update += Update;
             UiBuilder.Draw += Draw;
@@ -161,7 +161,7 @@ namespace InventorySearchBar
 
         private unsafe void Update(Framework framework)
         {
-            if (Settings == null || ClientState.LocalPlayer == null) return;
+            if (Settings == null || ClientState.LocalPlayer == null || _manager == null) return;
 
             KeyboardHelper.Instance?.Update();
             _manager.Update();
@@ -174,7 +174,7 @@ namespace InventorySearchBar
 
         private unsafe void Draw()
         {
-            if (Settings == null || ClientState.LocalPlayer == null) return;
+            if (Settings == null || ClientState.LocalPlayer == null || _manager == null) return;
 
             if (_manager.ActiveInventory == null)
             {
@@ -195,7 +195,7 @@ namespace InventorySearchBar
 
         public static unsafe void ClearHighlights()
         {
-            _manager.ClearHighlights();
+            _manager?.ClearHighlights();
         }
 
         private void OpenConfigUi()
