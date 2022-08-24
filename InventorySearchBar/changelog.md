@@ -1,3 +1,6 @@
+# 0.3.0.0
+- Added support for Patch 6.2 and Dalamud Api7.
+
 # 0.2.0.1
 - Fixed potential crashes.
 

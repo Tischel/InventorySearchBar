@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "dependencies": {
+    "net6.0": {
+      "DalamudPackager": {
+        "type": "Direct",
+        "requested": "[2.1.8, )",
+        "resolved": "2.1.8",
+        "contentHash": "YqagNXs9InxmqkXzq7kLveImxnodkBEicAhydMXVp7dFjC7xb76U6zGgAax4/BWIWfZeWzr5DJyQSev31kj81A=="
+      },
+      "NaturalSort.Extension": {
+        "type": "Transitive",
+        "resolved": "3.2.0",
+        "contentHash": "E6DE1xnwGYIwvxMeqW/TwJ882q+NL+TBJtW1x+u5u77HMCupL9qBQUkQikFcZYH0oSBr47qLpC/UYx4atTLdQA=="
+      },
+      "SerialQueue": {
+        "type": "Transitive",
+        "resolved": "2.1.0",
+        "contentHash": "rmQcrFXgcrqT9M6+xdxAK/JWx1vFuCRT8fTdce4ALdze2/8N5yMRW9Vmkresw+JpL+JC8zuC1HfDkrfVgBUIqA=="
+      },
+      "System.Reactive": {
+        "type": "Transitive",
+        "resolved": "5.0.0",
+        "contentHash": "erBZjkQHWL9jpasCE/0qKAryzVBJFxGHVBAvgRN1bzM0q2s1S4oYREEEL0Vb+1kA/6BKb5FjUZMp5VXmy+gzkQ=="
+      },
+      "criticalcommonlib": {
+        "type": "Project",
+        "dependencies": {
+          "LuminaSupplemental.Excel": "6.0.2",
+          "NaturalSort.Extension": "3.2.0",
+          "SerialQueue": "2.1.0",
+          "System.Reactive": "5.0.0"
+        }
+      },
+      "luminasupplemental.excel": {
+        "type": "Project"
+      }
+    }
+  }
+}

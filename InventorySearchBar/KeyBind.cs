@@ -1,6 +1,5 @@
 ﻿using ImGuiNET;
 using InventorySearchBar.Helpers;
-using System.Windows.Forms;
 
 namespace InventorySearchBar
 {

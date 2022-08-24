@@ -1,4 +1,5 @@
 ﻿using CriticalCommonLib;
+using CriticalCommonLib.Crafting;
 using CriticalCommonLib.Services;
 using CriticalCommonLib.Services.Ui;
 using Dalamud.Data;
@@ -46,6 +47,7 @@ namespace InventorySearchBar
         private static OdrScanner OdrScanner { get; set; } = null!;
         public static InventoryMonitor InventoryMonitor { get; private set; } = null!;
         public static CharacterMonitor CharacterMonitor { get; private set; } = null!;
+        public static CraftMonitor CraftMonitor { get; private set; } = null!;
         public static GameUiManager GameUi { get; private set; } = null!;
 
         private static InventoriesManager _manager = null!;
@@ -81,13 +83,14 @@ namespace InventorySearchBar
             KeyboardHelper.Initialize();
 
             pluginInterface.Create<Service>();
-            ExcelCache.Initialise();
+            Service.ExcelCache = new ExcelCache(Service.Data);
             GameInterface.Initialise(Service.Scanner);
 
             CharacterMonitor = new CharacterMonitor();
             OdrScanner = new OdrScanner(CharacterMonitor);
             GameUi = new GameUiManager();
-            InventoryMonitor = new InventoryMonitor(OdrScanner, CharacterMonitor, GameUi);
+            CraftMonitor = new CraftMonitor(GameUi);
+            InventoryMonitor = new InventoryMonitor(OdrScanner, CharacterMonitor, GameUi, CraftMonitor);
 
             if (pluginInterface.AssemblyLocation.DirectoryName != null)
             {
@@ -219,10 +222,11 @@ namespace InventorySearchBar
             InventoryMonitor.Dispose();
             GameUi.Dispose();
             CharacterMonitor.Dispose();
+            CraftMonitor.Dispose();
             OdrScanner.Dispose();
 
-            ExcelCache.Destroy();
             GameInterface.Dispose();
+            Service.ExcelCache.Destroy();
 
             _windowSystem.RemoveAllWindows();
             _manager.Dispose();
