@@ -1,3 +1,6 @@
+# 0.4.0.0
+- Added support for the Premium Chocobo Saddlebags.
+
 # 0.3.0.1
 - Fixed plugin failing to install.
 

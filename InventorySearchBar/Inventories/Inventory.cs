@@ -84,7 +84,7 @@ namespace InventorySearchBar.Inventories
                     }
 
                     // map
-                    int bagIndex = (int)item.SortedContainer - FirstBagOffset;
+                    int bagIndex = ContainerIndex(item) - FirstBagOffset;
                     if (_filter.Count > bagIndex)
                     {
                         List<bool> bag = _filter[bagIndex];
@@ -106,6 +106,11 @@ namespace InventorySearchBar.Inventories
         protected virtual List<InventoryItem> GetSortedItems()
         {
             return Plugin.InventoryMonitor.GetSpecificInventory(CharacterId, Category);
+        }
+
+        protected virtual int ContainerIndex(InventoryItem item)
+        {
+            return (int)item.SortedContainer;
         }
 
         public void UpdateHighlights()

@@ -1,6 +1,9 @@
 ﻿using CriticalCommonLib.Enums;
 using CriticalCommonLib.Models;
+using FFXIVClientStructs.FFXIV.Component.GUI;
+using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace InventorySearchBar.Inventories
 {
@@ -15,9 +18,9 @@ namespace InventorySearchBar.Inventories
 
         public ChocoboInventory()
         {
-            // 2 grids of 35 items
+            // 4 grids of 35 items
             _emptyFilter = new List<List<bool>>();
-            for (int i = 0; i < 2; i++)
+            for (int i = 0; i < 4; i++)
             {
                 List<bool> list = new List<bool>(GridItemCount);
                 for (int j = 0; j < GridItemCount; j++)
@@ -29,12 +32,62 @@ namespace InventorySearchBar.Inventories
             }
         }
 
+        protected override List<InventoryItem> GetSortedItems()
+        {
+            List<InventoryItem> list = new List<InventoryItem>();
+            list.AddRange(Plugin.InventoryMonitor.GetSpecificInventory(CharacterId, InventoryCategory.CharacterSaddleBags));
+            list.AddRange(Plugin.InventoryMonitor.GetSpecificInventory(CharacterId, InventoryCategory.CharacterPremiumSaddleBags));
+            return list;
+        }
+
+        protected override int ContainerIndex(InventoryItem item)
+        {
+            if (item.SortedContainer >= InventoryType.PremiumSaddleBag0)
+            {
+                return (int)item.SortedContainer - 98;
+            }
+
+            return (int)item.SortedContainer;
+        }
+
         protected override unsafe void InternalUpdateHighlights(bool forced = false)
         {
-            if (_node == null || _node->UldManager.NodeListCount < 78) { return; }
+            if (_addon == IntPtr.Zero) { return; }
 
-            UpdateGridHighlights(_node, 44, 0); // left grid
-            UpdateGridHighlights(_node, 8, 1); // right grid
+            int offset = GetGridOffset();
+
+            UpdateGridHighlights(_node, 44, offset); // left grid
+            UpdateGridHighlights(_node, 8, offset + 1); // right grid
+
+            HighlightTabs(forced);
+        }
+
+        public unsafe void HighlightTabs(bool forced = false)
+        {
+            if (_node->UldManager.NodeListCount < 81) { return; }
+
+            if (!Plugin.Settings.HightlightTabs && !forced) { return; }
+
+            AtkResNode* firstBagTab = _node->UldManager.NodeList[81];
+            bool resultsInFirstTab = _filter != null && (_filter[0].Any(b => b == true) || _filter[1].Any(b => b == true));
+            SetTabHighlight(firstBagTab, resultsInFirstTab);
+
+            AtkResNode* secondBagTab = _node->UldManager.NodeList[80];
+            bool resultsInSecondTab = _filter != null && (_filter[2].Any(b => b == true) || _filter[3].Any(b => b == true));
+            SetTabHighlight(secondBagTab, resultsInSecondTab);
+        }
+
+        public unsafe int GetGridOffset()
+        {
+            if (_node->UldManager.NodeListCount < 80) { return 0; }
+
+            AtkResNode* firstBagTab = _node->UldManager.NodeList[80];
+            if (GetTabEnabled(firstBagTab->GetComponent()))
+            {
+                return 2;
+            }
+
+            return 0;
         }
     }
 

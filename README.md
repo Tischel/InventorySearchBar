@@ -49,10 +49,6 @@ Example: `j:blm Augmented` would find all the items equippable by a Black Mage t
 ## Supported Inventories
 
 - Character Inventory
-- Chocobo Saddle
+- Chocobo Saddlebags
 - Retainer Inventory
 - Armoury
-
-## Known Issues
-
-- Premium Cocobo Saddle not yet supported
