@@ -1,3 +1,6 @@
+# 0.5.0.0
+- Updated CriticalCommonLib which fixes some performance issues.
+
 # 0.4.0.0
 - Added support for the Premium Chocobo Saddlebags.
 
