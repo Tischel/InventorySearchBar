@@ -1,5 +1,6 @@
 # 0.5.0.0
 - Updated CriticalCommonLib which fixes some performance issues.
+- Fixed inventory tabs being hard to click due to the search bar having a bigger clickable area than intended.
 
 # 0.4.0.0
 - Added support for the Premium Chocobo Saddlebags.

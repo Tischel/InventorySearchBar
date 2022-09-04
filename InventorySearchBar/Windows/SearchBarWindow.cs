@@ -26,7 +26,8 @@ namespace InventorySearchBar.Windows
                 | ImGuiWindowFlags.NoTitleBar
                 | ImGuiWindowFlags.NoSavedSettings;
 
-            Size = new Vector2(Settings.SearchBarWidth, 24);
+            Size = new Vector2(Settings.SearchBarWidth * 0.86f, 22);
+            SizeCondition = ImGuiCond.Always;
 
             RespectCloseHotkey = false;
         }
@@ -54,6 +55,9 @@ namespace InventorySearchBar.Windows
             ImGui.PushStyleVar(ImGuiStyleVar.WindowRounding, 0);
             ImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, new Vector2(0, 0));
             ImGui.PushStyleVar(ImGuiStyleVar.WindowBorderSize, 0);
+            ImGui.PushStyleVar(ImGuiStyleVar.WindowMinSize, new Vector2(1, 1));
+            ImGui.PushStyleVar(ImGuiStyleVar.FrameBorderSize, 0);
+
 
             if (Inventory != null && Inventory.Addon != IntPtr.Zero)
             {
@@ -66,13 +70,13 @@ namespace InventorySearchBar.Windows
                 float y = inventory->Y + 13 * inventory->Scale;
 
                 Position = new Vector2(x, y);
-                Size = new Vector2(Settings.SearchBarWidth, 24);
+                Size = new Vector2(Settings.SearchBarWidth * 0.86f, 22);
             }
         }
 
         public override void PostDraw()
         {
-            ImGui.PopStyleVar(3);
+            ImGui.PopStyleVar(5);
         }
 
         public override unsafe void Draw()
