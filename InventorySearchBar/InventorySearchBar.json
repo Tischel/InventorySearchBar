@@ -5,5 +5,5 @@
   "Description": "Supports different types of filters to be able to find items by name, type, supported job or level requirements.\n\nSupported Inventories:\n\t- Character Inventory\n\t- Chocobo Saddlebags\n\t- Retainer Inventory\n\t- Armoury",
   "RepoUrl": "https://github.com/Tischel/InventorySearchBar",
   "Tags": [ "UI" ],
-  "Changelog": "0.5.0.0\n- Updated CriticalCommonLib which fixes some performance issues.\n- Fixed inventory tabs being hard to click due to the search bar having a bigger clickable area than intended."
+  "Changelog": "1.0.0.0\n- Moved out of testing."
 }

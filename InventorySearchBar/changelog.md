@@ -1,3 +1,6 @@
+# 1.0.0.0
+- Moved out of testing.
+
 # 0.5.0.0
 - Updated CriticalCommonLib which fixes some performance issues.
 - Fixed inventory tabs being hard to click due to the search bar having a bigger clickable area than intended.
