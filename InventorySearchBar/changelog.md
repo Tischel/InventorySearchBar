@@ -1,3 +1,6 @@
+# 1.0.0.1
+- Fixed search bar not being click through when hidden.
+
 # 1.0.0.0
 - Moved out of testing.
 

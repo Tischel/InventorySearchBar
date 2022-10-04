@@ -12,7 +12,9 @@ namespace InventorySearchBar.Windows
         public string SearchTerm = "";
         public Inventory? Inventory = null;
         private bool _needsFocus = false;
+
         private bool _canShow = false;
+        public bool CanShow => _canShow;
 
         private Settings Settings => Plugin.Settings;
 
@@ -30,6 +32,14 @@ namespace InventorySearchBar.Windows
             SizeCondition = ImGuiCond.Always;
 
             RespectCloseHotkey = false;
+        }
+
+        public void UpdateCanShow()
+        {
+            if (Plugin.Settings.KeybindOnly && Plugin.IsKeybindActive)
+            {
+                _canShow = true;
+            }
         }
 
         public override void OnOpen()
@@ -81,11 +91,6 @@ namespace InventorySearchBar.Windows
 
         public override unsafe void Draw()
         {
-            if (Plugin.Settings.KeybindOnly && Plugin.IsKeybindActive)
-            {
-                _canShow = true;
-            }
-
             if (!_canShow) return;
 
             ImGui.PushItemWidth(Settings.SearchBarWidth);
