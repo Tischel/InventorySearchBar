@@ -1,3 +1,6 @@
+# 1.0.0.2
+- Fixed search bar not showing when "Keybind only" is disabled.
+
 # 1.0.0.1
 - Fixed search bar not being click through when hidden.
 

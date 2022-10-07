@@ -13,7 +13,7 @@ namespace InventorySearchBar.Windows
         public Inventory? Inventory = null;
         private bool _needsFocus = false;
 
-        private bool _canShow = false;
+        private bool _canShow = true;
         public bool CanShow => _canShow;
 
         private Settings Settings => Plugin.Settings;
@@ -36,7 +36,11 @@ namespace InventorySearchBar.Windows
 
         public void UpdateCanShow()
         {
-            if (Plugin.Settings.KeybindOnly && Plugin.IsKeybindActive)
+            if (Plugin.Settings.KeybindOnly)
+            {
+                _canShow = _canShow || Plugin.IsKeybindActive;
+            }
+            else
             {
                 _canShow = true;
             }
