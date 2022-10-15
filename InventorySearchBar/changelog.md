@@ -1,3 +1,6 @@
+# 1.0.0.3
+- Fixed search bar with an active search disappearing when switching tabs.
+
 # 1.0.0.2
 - Fixed search bar not showing when "Keybind only" is disabled.
 

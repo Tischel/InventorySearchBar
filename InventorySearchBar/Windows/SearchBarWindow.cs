@@ -110,7 +110,7 @@ namespace InventorySearchBar.Windows
 
             ImGui.InputText("", ref SearchTerm, 100);
 
-            if (Plugin.Settings.KeybindOnly && !ImGui.IsItemActive())
+            if (Plugin.Settings.KeybindOnly && !ImGui.IsItemActive() && SearchTerm.Length == 0)
             {
                 _canShow = false;
             }
