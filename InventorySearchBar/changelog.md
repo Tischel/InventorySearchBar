@@ -1,3 +1,6 @@
+# 1.1.0.1
+- Fixed inventories with tabs not working correctly.
+
 # 1.1.0.0
 - Added support for Patch 6.3 and Dalamud Api8.
 

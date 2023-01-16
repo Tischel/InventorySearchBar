@@ -17,7 +17,7 @@ namespace InventorySearchBar.Inventories
         public override int OffsetX => Plugin.Settings.RetainerInventoryOffset;
 
         protected int _tabCount = 5;
-        protected int _tabIndexStart = 12;
+        protected int _tabIndexStart = 13;
 
         public RetainerInventory()
         {

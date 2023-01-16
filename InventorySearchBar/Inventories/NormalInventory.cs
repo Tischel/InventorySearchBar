@@ -34,20 +34,20 @@ namespace InventorySearchBar.Inventories
 
         private unsafe void UpdateTabHighlight(int index)
         {
-            if (_node == null || _node->UldManager.NodeListCount < 14) { return; }
+            if (_node == null || _node->UldManager.NodeListCount < 15) { return; }
 
-            AtkResNode* firstBagTab = _node->UldManager.NodeList[14 - index];
+            AtkResNode* firstBagTab = _node->UldManager.NodeList[15 - index];
             bool resultsInFirstTab = _filter != null && _filter[index].Any(b => b == true);
             SetTabHighlight(firstBagTab, resultsInFirstTab);
         }
 
         public unsafe int GetGridOffset()
         {
-            if (_node == null || _node->UldManager.NodeListCount < 14) { return -1; }
+            if (_node == null || _node->UldManager.NodeListCount < 15) { return -1; }
 
             for (int i = 0; i < 4; i++)
             {
-                AtkResNode* bagNode = _node->UldManager.NodeList[14 - i];
+                AtkResNode* bagNode = _node->UldManager.NodeList[15 - i];
                 if (GetTabEnabled(bagNode->GetComponent()))
                 {
                     return i;

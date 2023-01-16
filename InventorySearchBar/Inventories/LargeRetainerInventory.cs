@@ -12,7 +12,7 @@ namespace InventorySearchBar.Inventories
         public LargeRetainerInventory() : base()
         {
             _tabCount = 3;
-            _tabIndexStart = 66;
+            _tabIndexStart = 67;
         }
 
         protected override unsafe void InternalUpdateHighlights(bool forced = false)

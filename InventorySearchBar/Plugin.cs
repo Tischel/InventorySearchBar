@@ -103,7 +103,7 @@ namespace InventorySearchBar
                 AssemblyLocation = Assembly.GetExecutingAssembly().Location;
             }
 
-            Version = Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "1.1.0.0";
+            Version = Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "1.1.0.1";
 
             Framework.Update += Update;
             UiBuilder.Draw += Draw;
