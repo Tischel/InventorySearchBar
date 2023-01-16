@@ -44,7 +44,8 @@ namespace InventorySearchBar
         private static FiltersWindow _filtersWindow = null!;
         private static SearchBarWindow _searchBarWindow = null!;
 
-        private static OdrScanner OdrScanner { get; set; } = null!;
+        private static GameInterface GameInterface { get; set; } = null!;
+        private static InventoryScanner InventoryScanner { get; set; } = null!;
         public static InventoryMonitor InventoryMonitor { get; private set; } = null!;
         public static CharacterMonitor CharacterMonitor { get; private set; } = null!;
         public static CraftMonitor CraftMonitor { get; private set; } = null!;
@@ -84,13 +85,14 @@ namespace InventorySearchBar
 
             pluginInterface.Create<Service>();
             Service.ExcelCache = new ExcelCache(Service.Data);
-            GameInterface.Initialise(Service.Scanner);
+            GameInterface = new GameInterface();
 
             CharacterMonitor = new CharacterMonitor();
-            OdrScanner = new OdrScanner(CharacterMonitor);
             GameUi = new GameUiManager();
             CraftMonitor = new CraftMonitor(GameUi);
-            InventoryMonitor = new InventoryMonitor(OdrScanner, CharacterMonitor, GameUi, CraftMonitor);
+            InventoryScanner = new InventoryScanner(CharacterMonitor, GameUi, GameInterface);
+            InventoryMonitor = new InventoryMonitor(CharacterMonitor, CraftMonitor, InventoryScanner);
+            InventoryScanner.Enable();
 
             if (pluginInterface.AssemblyLocation.DirectoryName != null)
             {
@@ -101,7 +103,7 @@ namespace InventorySearchBar
                 AssemblyLocation = Assembly.GetExecutingAssembly().Location;
             }
 
-            Version = Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "1.0.0.1";
+            Version = Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "1.1.0.0";
 
             Framework.Update += Update;
             UiBuilder.Draw += Draw;
@@ -224,7 +226,7 @@ namespace InventorySearchBar
             GameUi.Dispose();
             CharacterMonitor.Dispose();
             CraftMonitor.Dispose();
-            OdrScanner.Dispose();
+            InventoryScanner.Dispose();
 
             GameInterface.Dispose();
             Service.ExcelCache.Destroy();

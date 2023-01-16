@@ -1,3 +1,6 @@
+# 1.1.0.0
+- Added support for Patch 6.3 and Dalamud Api8.
+
 # 1.0.0.3
 - Fixed search bar with an active search disappearing when switching tabs.
 
