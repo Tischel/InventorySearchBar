@@ -4,6 +4,7 @@ using InventorySearchBar.Filters;
 using Lumina.Excel.GeneratedSheets;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace InventorySearchBar.Inventories
 {
@@ -51,7 +52,7 @@ namespace InventorySearchBar.Inventories
                 return;
             }
 
-            _filter = new List<List<bool>>(_emptyFilter);
+            _filter = new List<List<bool>>(_emptyFilter.Select(bs => new List<bool>(bs)));
             string[] searchTerms = text.ToUpper().Split(Plugin.Settings.SearchTermsSeparatorCharacter);
 
             // get items
@@ -105,7 +106,8 @@ namespace InventorySearchBar.Inventories
 
         protected virtual List<InventoryItem> GetSortedItems()
         {
-            return Plugin.InventoryMonitor.GetSpecificInventory(CharacterId, Category);
+            return Plugin.InventoryMonitor.GetSpecificInventory(CharacterId, Category)
+                .Where(item => item.ItemId != 0).ToList();
         }
 
         protected virtual int ContainerIndex(InventoryItem item)
