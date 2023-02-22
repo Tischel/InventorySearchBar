@@ -1,3 +1,6 @@
+# 1.1.0.2
+- Fixed retainer inventories not working correctly.
+
 # 1.1.0.1
 - Fixed inventories with tabs not working correctly.
 

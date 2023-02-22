@@ -35,15 +35,22 @@ namespace InventorySearchBar.Inventories
 
         public ArmouryInventory()
         {
+
+        }
+
+        protected override List<List<bool>> GetEmptyFilter()
+        {
             // 1 grid of 50 items
-            _emptyFilter = new List<List<bool>>();
+            List<List<bool>>  emptyFilter = new List<List<bool>>();
             List<bool> list = new List<bool>(GridItemCount);
             for (int j = 0; j < GridItemCount; j++)
             {
                 list.Add(false);
             }
 
-            _emptyFilter.Add(list);
+            emptyFilter.Add(list);
+
+            return emptyFilter;
         }
 
         public override void ApplyFilters(List<Filter> filters, string searchTerm)

@@ -1,7 +1,6 @@
 ﻿using CriticalCommonLib.Models;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using InventorySearchBar.Filters;
-using Lumina.Excel.GeneratedSheets;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,8 +18,8 @@ namespace InventorySearchBar.Inventories
 
         protected AtkUnitBase* _node => (AtkUnitBase*)_addon;
 
-        protected List<List<bool>> _emptyFilter = null!;
         protected List<List<bool>>? _filter = null!;
+        protected abstract List<List<bool>> GetEmptyFilter();
 
         protected abstract ulong CharacterId { get; }
         protected abstract InventoryCategory Category { get; }
@@ -52,7 +51,7 @@ namespace InventorySearchBar.Inventories
                 return;
             }
 
-            _filter = new List<List<bool>>(_emptyFilter.Select(bs => new List<bool>(bs)));
+            _filter = GetEmptyFilter();
             string[] searchTerms = text.ToUpper().Split(Plugin.Settings.SearchTermsSeparatorCharacter);
 
             // get items
