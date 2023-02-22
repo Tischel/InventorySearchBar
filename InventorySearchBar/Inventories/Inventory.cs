@@ -3,6 +3,7 @@ using FFXIVClientStructs.FFXIV.Component.GUI;
 using InventorySearchBar.Filters;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace InventorySearchBar.Inventories
 {
@@ -104,7 +105,8 @@ namespace InventorySearchBar.Inventories
 
         protected virtual List<InventoryItem> GetSortedItems()
         {
-            return Plugin.InventoryMonitor.GetSpecificInventory(CharacterId, Category);
+            return Plugin.InventoryMonitor.GetSpecificInventory(CharacterId, Category)
+                .Where(item => item.ItemId != 0).ToList();
         }
 
         protected virtual int ContainerIndex(InventoryItem item)
