@@ -16,8 +16,13 @@ namespace InventorySearchBar.Inventories
 
         public CharacterInventory()
         {
+
+        }
+
+        protected override List<List<bool>> GetEmptyFilter()
+        {
             // 4 grids of 35 items
-            _emptyFilter = new List<List<bool>>();
+            List<List<bool>>  emptyFilter = new List<List<bool>>();
             for (int i = 0; i < 4; i++)
             {
                 List<bool> list = new List<bool>(GridItemCount);
@@ -26,8 +31,10 @@ namespace InventorySearchBar.Inventories
                     list.Add(false);
                 }
 
-                _emptyFilter.Add(list);
+                emptyFilter.Add(list);
             }
+
+            return emptyFilter;
         }
 
         protected override void InternalUpdateHighlights(bool forced = false)

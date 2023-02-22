@@ -21,8 +21,12 @@ namespace InventorySearchBar.Inventories
 
         public RetainerInventory()
         {
+        }
+
+        protected override List<List<bool>> GetEmptyFilter()
+        {
             // 5 grids of 35 items
-            _emptyFilter = new List<List<bool>>();
+            List<List<bool>>  emptyFilter = new List<List<bool>>();
             for (int i = 0; i < 5; i++)
             {
                 List<bool> list = new List<bool>(GridItemCount);
@@ -31,8 +35,10 @@ namespace InventorySearchBar.Inventories
                     list.Add(false);
                 }
 
-                _emptyFilter.Add(list);
+                emptyFilter.Add(list);
             }
+
+            return emptyFilter;
         }
 
         protected override unsafe void InternalUpdateHighlights(bool forced = false)

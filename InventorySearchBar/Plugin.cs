@@ -45,6 +45,7 @@ namespace InventorySearchBar
         private static SearchBarWindow _searchBarWindow = null!;
 
         private static GameInterface GameInterface { get; set; } = null!;
+        public static OdrScanner OdrScanner { get; private set; } = null!;
         private static InventoryScanner InventoryScanner { get; set; } = null!;
         public static InventoryMonitor InventoryMonitor { get; private set; } = null!;
         public static CharacterMonitor CharacterMonitor { get; private set; } = null!;
@@ -90,7 +91,8 @@ namespace InventorySearchBar
             CharacterMonitor = new CharacterMonitor();
             GameUi = new GameUiManager();
             CraftMonitor = new CraftMonitor(GameUi);
-            InventoryScanner = new InventoryScanner(CharacterMonitor, GameUi, GameInterface);
+            OdrScanner = new OdrScanner(CharacterMonitor);
+            InventoryScanner = new InventoryScanner(CharacterMonitor, GameUi, GameInterface, OdrScanner);
             InventoryMonitor = new InventoryMonitor(CharacterMonitor, CraftMonitor, InventoryScanner);
             InventoryScanner.Enable();
 
@@ -103,7 +105,7 @@ namespace InventorySearchBar
                 AssemblyLocation = Assembly.GetExecutingAssembly().Location;
             }
 
-            Version = Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "1.1.0.1";
+            Version = Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "1.1.0.2";
 
             Framework.Update += Update;
             UiBuilder.Draw += Draw;
@@ -227,6 +229,7 @@ namespace InventorySearchBar
             CharacterMonitor.Dispose();
             CraftMonitor.Dispose();
             InventoryScanner.Dispose();
+            OdrScanner.Dispose();
 
             GameInterface.Dispose();
             Service.ExcelCache.Destroy();

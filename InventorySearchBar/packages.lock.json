@@ -8,6 +8,16 @@
         "resolved": "2.1.10",
         "contentHash": "S6NrvvOnLgT4GDdgwuKVJjbFo+8ZEj+JsEYk9ojjOR/MMfv1dIFpT8aRJQfI24rtDcw1uF+GnSSMN4WW1yt7fw=="
       },
+      "CSVFile": {
+        "type": "Transitive",
+        "resolved": "3.1.0",
+        "contentHash": "yz/FptkwDL0bxhaxoyrFPI5SyxUUfuZtbH1E2yLiHHFZFFrSXNnWJHfXSt5Anvy1gWpHCLpC520Bxy6G/Opp1g=="
+      },
+      "CsvHelper": {
+        "type": "Transitive",
+        "resolved": "30.0.1",
+        "contentHash": "rcZtgbWR+As4G3Vpgx0AMNmShGuQLFjkHAPIIflzrfkJCx8/AOd4m96ZRmiU1Wi39qS5UVjV0P8qdgqOo5Cwyg=="
+      },
       "NaturalSort.Extension": {
         "type": "Transitive",
         "resolved": "3.2.0",
@@ -23,25 +33,20 @@
         "resolved": "5.0.0",
         "contentHash": "erBZjkQHWL9jpasCE/0qKAryzVBJFxGHVBAvgRN1bzM0q2s1S4oYREEEL0Vb+1kA/6BKb5FjUZMp5VXmy+gzkQ=="
       },
-      "XivCommon": {
-        "type": "Transitive",
-        "resolved": "7.0.0-alpha.1",
-        "contentHash": "4Yy4Wg3bnI/g9BSEYAqOZALmVMJZS0wcP847VlUIThBqIS/47O6tw2BI84he4KuPSTfIsYOzrcz3vAia8+Pn3g=="
-      },
       "criticalcommonlib": {
         "type": "Project",
         "dependencies": {
           "LuminaSupplemental.Excel": "[6.0.2, )",
           "NaturalSort.Extension": "[3.2.0, )",
           "SerialQueue": "[2.1.0, )",
-          "System.Reactive": "[5.0.0, )",
-          "XivCommon": "[7.0.0-alpha.1, )"
+          "System.Reactive": "[5.0.0, )"
         }
       },
       "luminasupplemental.excel": {
         "type": "Project",
         "dependencies": {
-          "XivCommon": "[7.0.0-alpha.1, )"
+          "CSVFile": "[3.1.0, )",
+          "CsvHelper": "[30.0.1, )"
         }
       }
     }
