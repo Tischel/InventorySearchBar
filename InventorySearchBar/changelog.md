@@ -1,3 +1,6 @@
+# 1.2.0.0
+- Added support for Patch 6.35.
+
 # 1.1.0.2
 - Fixed retainer inventories not working correctly.
 

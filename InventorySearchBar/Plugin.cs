@@ -51,6 +51,7 @@ namespace InventorySearchBar
         public static CharacterMonitor CharacterMonitor { get; private set; } = null!;
         public static CraftMonitor CraftMonitor { get; private set; } = null!;
         public static GameUiManager GameUi { get; private set; } = null!;
+        public static IFrameworkService FrameworkService { get; private set; } = null!;
 
         private static InventoriesManager _manager = null!;
         public static bool IsKeybindActive = false;
@@ -86,6 +87,7 @@ namespace InventorySearchBar
 
             pluginInterface.Create<Service>();
             Service.ExcelCache = new ExcelCache(Service.Data);
+            FrameworkService = new FrameworkService(Service.Framework);
             GameInterface = new GameInterface();
 
             CharacterMonitor = new CharacterMonitor();
@@ -93,7 +95,7 @@ namespace InventorySearchBar
             CraftMonitor = new CraftMonitor(GameUi);
             OdrScanner = new OdrScanner(CharacterMonitor);
             InventoryScanner = new InventoryScanner(CharacterMonitor, GameUi, GameInterface, OdrScanner);
-            InventoryMonitor = new InventoryMonitor(CharacterMonitor, CraftMonitor, InventoryScanner);
+            InventoryMonitor = new InventoryMonitor(CharacterMonitor, CraftMonitor, InventoryScanner, FrameworkService);
             InventoryScanner.Enable();
 
             if (pluginInterface.AssemblyLocation.DirectoryName != null)

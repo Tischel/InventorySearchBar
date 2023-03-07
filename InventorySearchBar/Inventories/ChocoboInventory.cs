@@ -10,7 +10,7 @@ namespace InventorySearchBar.Inventories
     internal class ChocoboInventory : Inventory
     {
         public override string AddonName => "InventoryBuddy";
-        protected override ulong CharacterId => Plugin.CharacterMonitor.ActiveCharacter;
+        protected override ulong CharacterId => Plugin.CharacterMonitor.ActiveCharacterId;
         protected override InventoryCategory Category => InventoryCategory.CharacterSaddleBags;
         protected override int FirstBagOffset => (int)InventoryType.SaddleBag0;
         protected override int GridItemCount => 35;

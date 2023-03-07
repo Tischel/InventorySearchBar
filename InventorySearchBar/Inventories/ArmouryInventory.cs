@@ -9,7 +9,7 @@ namespace InventorySearchBar.Inventories
     internal class ArmouryInventory : Inventory
     {
         public override string AddonName => "ArmouryBoard";
-        protected override ulong CharacterId => Plugin.CharacterMonitor.ActiveCharacter;
+        protected override ulong CharacterId => Plugin.CharacterMonitor.ActiveCharacterId;
         protected override InventoryCategory Category => InventoryCategory.CharacterArmoryChest;
         protected override int FirstBagOffset => _currentBag;
         protected override int GridItemCount => 50;

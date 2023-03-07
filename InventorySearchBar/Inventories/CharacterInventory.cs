@@ -8,7 +8,7 @@ namespace InventorySearchBar.Inventories
     internal class CharacterInventory : Inventory
     {
         public override string AddonName => throw new NotImplementedException();
-        protected override ulong CharacterId => Plugin.CharacterMonitor.ActiveCharacter;
+        protected override ulong CharacterId => Plugin.CharacterMonitor.ActiveCharacterId;
         protected override InventoryCategory Category => InventoryCategory.CharacterBags;
         protected override int FirstBagOffset => (int)InventoryType.Bag0;
         protected override int GridItemCount => 35;
