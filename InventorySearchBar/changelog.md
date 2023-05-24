@@ -1,3 +1,6 @@
+# 1.3.0.0
+- Added support for Patch 6.4.
+
 # 1.2.0.0
 - Added support for Patch 6.35.
 
