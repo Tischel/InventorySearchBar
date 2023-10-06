@@ -11,6 +11,7 @@ using Dalamud.Game.Gui;
 using Dalamud.Interface;
 using Dalamud.Interface.Windowing;
 using Dalamud.Plugin;
+using Dalamud.Plugin.Services;
 using InventorySearchBar.Filters;
 using InventorySearchBar.Helpers;
 using InventorySearchBar.Inventories;
@@ -23,14 +24,15 @@ namespace InventorySearchBar
 {
     public class Plugin : IDalamudPlugin
     {
-        public static ClientState ClientState { get; private set; } = null!;
-        public static CommandManager CommandManager { get; private set; } = null!;
+        public static IClientState ClientState { get; private set; } = null!;
+        public static ICommandManager CommandManager { get; private set; } = null!;
         public static DalamudPluginInterface PluginInterface { get; private set; } = null!;
-        public static Framework Framework { get; private set; } = null!;
-        public static GameGui GameGui { get; private set; } = null!;
+        public static IFramework Framework { get; private set; } = null!;
+        public static IGameGui GameGui { get; private set; } = null!;
         public static UiBuilder UiBuilder { get; private set; } = null!;
-        public static DataManager DataManager { get; private set; } = null!;
-        public static KeyState KeyState { get; private set; } = null!;
+        public static IDataManager DataManager { get; private set; } = null!;
+        public static IKeyState KeyState { get; private set; } = null!;
+        public static IPluginLog Logger { get; private set; } = null!;
 
         public static string AssemblyLocation { get; private set; } = "";
         public string Name => "InventorySearchBar";
@@ -51,7 +53,6 @@ namespace InventorySearchBar
         public static CharacterMonitor CharacterMonitor { get; private set; } = null!;
         public static CraftMonitor CraftMonitor { get; private set; } = null!;
         public static GameUiManager GameUi { get; private set; } = null!;
-        public static IFrameworkService FrameworkService { get; private set; } = null!;
 
         private static InventoriesManager _manager = null!;
         public static bool IsKeybindActive = false;
@@ -65,13 +66,15 @@ namespace InventorySearchBar
         };
 
         public Plugin(
-            ClientState clientState,
-            CommandManager commandManager,
+            IClientState clientState,
+            ICommandManager commandManager,
             DalamudPluginInterface pluginInterface,
-            Framework framwork,
-            DataManager dataManager,
-            GameGui gameGui,
-            KeyState keyState
+            IFramework framwork,
+            IDataManager dataManager,
+            IGameGui gameGui,
+            IKeyState keyState,
+            IPluginLog logger,
+            IGameInteropProvider gameInteropProvider
         )
         {
             ClientState = clientState;
@@ -82,20 +85,21 @@ namespace InventorySearchBar
             GameGui = gameGui;
             UiBuilder = pluginInterface.UiBuilder;
             KeyState = keyState;
+            Logger = logger;
 
             KeyboardHelper.Initialize();
 
+            // allagan tools setup
             pluginInterface.Create<Service>();
             Service.ExcelCache = new ExcelCache(Service.Data);
-            FrameworkService = new FrameworkService(Service.Framework);
-            GameInterface = new GameInterface();
-
-            CharacterMonitor = new CharacterMonitor();
-            GameUi = new GameUiManager();
+            Service.ExcelCache.PreCacheItemData();
+            GameInterface = new GameInterface(gameInteropProvider);
+            CharacterMonitor = new CharacterMonitor(framwork, clientState, Service.ExcelCache);
+            GameUi = new GameUiManager(gameInteropProvider);
             CraftMonitor = new CraftMonitor(GameUi);
             OdrScanner = new OdrScanner(CharacterMonitor);
-            InventoryScanner = new InventoryScanner(CharacterMonitor, GameUi, GameInterface, OdrScanner);
-            InventoryMonitor = new InventoryMonitor(CharacterMonitor, CraftMonitor, InventoryScanner, FrameworkService);
+            InventoryScanner = new InventoryScanner(CharacterMonitor, GameUi, GameInterface, OdrScanner, gameInteropProvider);
+            InventoryMonitor = new InventoryMonitor(CharacterMonitor, CraftMonitor, InventoryScanner, Framework);
             InventoryScanner.Enable();
 
             if (pluginInterface.AssemblyLocation.DirectoryName != null)
@@ -107,7 +111,7 @@ namespace InventorySearchBar
                 AssemblyLocation = Assembly.GetExecutingAssembly().Location;
             }
 
-            Version = Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "1.3.0.0";
+            Version = Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "1.4.0.0";
 
             Framework.Update += Update;
             UiBuilder.Draw += Draw;
@@ -168,7 +172,7 @@ namespace InventorySearchBar
             _filtersWindow.IsOpen = true;
         }
 
-        private unsafe void Update(Framework framework)
+        private unsafe void Update(IFramework framework)
         {
             if (Settings == null || ClientState.LocalPlayer == null || _manager == null) return;
 
