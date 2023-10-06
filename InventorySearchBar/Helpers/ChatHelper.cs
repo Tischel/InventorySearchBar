@@ -1,5 +1,5 @@
-﻿using FFXIVClientStructs.FFXIV.Component.GUI;
-using System;
+﻿using FFXIVClientStructs.FFXIV.Client.System.Framework;
+using FFXIVClientStructs.FFXIV.Client.UI;
 
 namespace InventorySearchBar.Helpers
 {
@@ -7,8 +7,16 @@ namespace InventorySearchBar.Helpers
     {
         public static unsafe bool IsInputTextActive()
         {
-            IntPtr ptr = *(IntPtr*)((IntPtr)AtkStage.GetSingleton() + 0x28) + 0x188E;
-            return ptr != IntPtr.Zero && *(bool*)ptr;
+            Framework* framework = Framework.Instance();
+            if (framework == null) { return false; }
+
+            UIModule* module = framework->GetUiModule();
+            if (module == null) { return false; }
+
+            RaptureAtkModule* atkModule = module->GetRaptureAtkModule();
+            if (atkModule == null) { return false; }
+
+            return atkModule->AtkModule.IsTextInputActive();
         }
     }
 }

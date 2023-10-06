@@ -10,7 +10,7 @@ namespace InventorySearchBar.Inventories
     internal class RetainerInventory : Inventory
     {
         public override string AddonName => "InventoryRetainer";
-        protected override ulong CharacterId => Plugin.CharacterMonitor.ActiveRetainer;
+        protected override ulong CharacterId => Plugin.CharacterMonitor.ActiveRetainer?.CharacterId ?? 0;
         protected override InventoryCategory Category => InventoryCategory.RetainerBags;
         protected override int FirstBagOffset => (int)InventoryType.RetainerBag0;
         protected override int GridItemCount => 35;

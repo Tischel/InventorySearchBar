@@ -66,7 +66,6 @@
 
 	<!-- Library References -->
 	<ItemGroup>
-		<ProjectReference Include="..\CriticalCommonLib\CriticalCommonLib.csproj" OutputItemType="true" />
         <Reference Include="FFXIVClientStructs">
             <HintPath>$(DalamudLibPath)FFXIVClientStructs.dll</HintPath>
             <Private>false</Private>
@@ -100,5 +99,8 @@
 	<!-- NuGet Packages -->
 	<ItemGroup>
 		<PackageReference Include="DalamudPackager" Version="2.1.12" />
+	</ItemGroup>
+	<ItemGroup>
+	  <ProjectReference Include="..\CriticalCommonLib\CriticalCommonLib.csproj" />
 	</ItemGroup>
 </Project>
