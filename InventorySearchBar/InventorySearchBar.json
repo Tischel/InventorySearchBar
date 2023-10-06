@@ -5,5 +5,5 @@
   "Description": "Supports different types of filters to be able to find items by name, type, supported job or level requirements.\n\nSupported Inventories:\n\t- Character Inventory\n\t- Chocobo Saddlebags\n\t- Retainer Inventory\n\t- Armoury",
   "RepoUrl": "https://github.com/Tischel/InventorySearchBar",
   "Tags": [ "UI" ],
-  "Changelog": "1.3.0.0\n- Added support for Patch 6.4."
+  "Changelog": "1.4.0.0\n\n- Added support for Patch 6.4 and Dalamud API 9."
 }
