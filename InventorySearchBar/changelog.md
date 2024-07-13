@@ -1,3 +1,6 @@
+# 1.5.0.0
+- Added support for Dawntrail and Dalamud API 10.
+
 # 1.4.0.0
 - Added support for Patch 6.4 and Dalamud API 9.
 
