@@ -10,7 +10,7 @@ namespace InventorySearchBar.Helpers
             Framework* framework = Framework.Instance();
             if (framework == null) { return false; }
 
-            UIModule* module = framework->GetUiModule();
+            UIModule* module = framework->GetUIModule();
             if (module == null) { return false; }
 
             RaptureAtkModule* atkModule = module->GetRaptureAtkModule();

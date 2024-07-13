@@ -1,13 +1,7 @@
 ﻿using CriticalCommonLib;
 using CriticalCommonLib.Crafting;
 using CriticalCommonLib.Services;
-using CriticalCommonLib.Services.Ui;
-using Dalamud.Data;
-using Dalamud.Game;
-using Dalamud.Game.ClientState;
-using Dalamud.Game.ClientState.Keys;
 using Dalamud.Game.Command;
-using Dalamud.Game.Gui;
 using Dalamud.Interface;
 using Dalamud.Interface.Windowing;
 using Dalamud.Plugin;
@@ -16,9 +10,12 @@ using InventorySearchBar.Filters;
 using InventorySearchBar.Helpers;
 using InventorySearchBar.Inventories;
 using InventorySearchBar.Windows;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace InventorySearchBar
 {
@@ -33,6 +30,8 @@ namespace InventorySearchBar
         public static IDataManager DataManager { get; private set; } = null!;
         public static IKeyState KeyState { get; private set; } = null!;
         public static IPluginLog Logger { get; private set; } = null!;
+        public static IGameInteropProvider GameInteropProvider { get; private set; } = null!;
+
 
         public static string AssemblyLocation { get; private set; } = "";
         public string Name => "InventorySearchBar";
@@ -57,6 +56,8 @@ namespace InventorySearchBar
         private static InventoriesManager _manager = null!;
         public static bool IsKeybindActive = false;
 
+        private bool _libLoaded = false;
+
         public static List<Filter> Filters = new List<Filter>()
         {
             new NameFilter(),
@@ -69,7 +70,7 @@ namespace InventorySearchBar
             IClientState clientState,
             ICommandManager commandManager,
             IDalamudPluginInterface pluginInterface,
-            IFramework framwork,
+            IFramework framework,
             IDataManager dataManager,
             IGameGui gameGui,
             IKeyState keyState,
@@ -80,27 +81,19 @@ namespace InventorySearchBar
             ClientState = clientState;
             CommandManager = commandManager;
             PluginInterface = pluginInterface;
-            Framework = framwork;
+            Framework = framework;
             DataManager = dataManager;
             GameGui = gameGui;
             UiBuilder = pluginInterface.UiBuilder;
             KeyState = keyState;
             Logger = logger;
+            GameInteropProvider = gameInteropProvider;
 
             KeyboardHelper.Initialize();
 
             // allagan tools setup
             pluginInterface.Create<Service>();
-            Service.ExcelCache = new ExcelCache(Service.Data);
-            Service.ExcelCache.PreCacheItemData();
-            GameInterface = new GameInterface(gameInteropProvider);
-            CharacterMonitor = new CharacterMonitor(framwork, clientState, Service.ExcelCache);
-            GameUi = new GameUiManager(gameInteropProvider);
-            CraftMonitor = new CraftMonitor(GameUi);
-            OdrScanner = new OdrScanner(CharacterMonitor);
-            InventoryScanner = new InventoryScanner(CharacterMonitor, GameUi, GameInterface, OdrScanner, gameInteropProvider);
-            InventoryMonitor = new InventoryMonitor(CharacterMonitor, CraftMonitor, InventoryScanner, Framework);
-            InventoryScanner.Enable();
+            Service.ExcelCache = new ExcelCache(Service.Data, new DalamudLogger<ExcelCache>("ExcelCache", logger));
 
             if (pluginInterface.AssemblyLocation.DirectoryName != null)
             {
@@ -142,6 +135,29 @@ namespace InventorySearchBar
             CreateWindows();
 
             _manager = new InventoriesManager();
+
+            //LoadLib();
+        }
+
+        private async void LoadLib()
+        {
+            await Task.Run(() =>
+            {
+                var token = new System.Threading.CancellationToken();
+                var task = Service.ExcelCache.StartAsync(token);
+
+                Service.ExcelCache.PreCacheItemData();
+
+                GameInterface = new GameInterface(GameInteropProvider);
+                CharacterMonitor = new CharacterMonitor(Framework, ClientState, Service.ExcelCache);
+                GameUi = new GameUiManager(Framework, GameGui);
+                CraftMonitor = new CraftMonitor(GameUi);
+                OdrScanner = new OdrScanner(CharacterMonitor, ClientState, Logger);
+                InventoryScanner = new InventoryScanner(CharacterMonitor, GameUi, GameInterface, OdrScanner, GameInteropProvider, Service.ExcelCache);
+                InventoryMonitor = new InventoryMonitor(CharacterMonitor, CraftMonitor, InventoryScanner, Framework);
+                InventoryMonitor.Start();
+                InventoryScanner.Enable();
+            });
         }
 
         public void Dispose()
@@ -175,6 +191,12 @@ namespace InventorySearchBar
         private unsafe void Update(IFramework framework)
         {
             if (Settings == null || ClientState.LocalPlayer == null || _manager == null) return;
+
+            if (!_libLoaded)
+            {
+                LoadLib();
+                _libLoaded = true;
+            }
 
             KeyboardHelper.Instance?.Update();
             _manager.Update();
@@ -249,6 +271,65 @@ namespace InventorySearchBar
             Framework.Update -= Update;
             UiBuilder.Draw -= Draw;
             UiBuilder.OpenConfigUi -= OpenConfigUi;
+        }
+    }
+
+    internal sealed class DalamudLogger<T> : ILogger<T>
+    {
+        private readonly string _name;
+        private readonly IPluginLog _pluginLog;
+
+        public DalamudLogger(string name, IPluginLog pluginLog)
+        {
+            _name = name;
+            _pluginLog = pluginLog;
+        }
+
+        public IDisposable BeginScope<TState>(TState state) => default!;
+
+        public bool IsEnabled(LogLevel logLevel)
+        {
+            //return (int)_configuration.LogLevel <= (int)logLevel;
+            return true;
+        }
+
+        IDisposable? ILogger.BeginScope<TState>(TState state)
+        {
+            return BeginScope(state);
+        }
+
+        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
+        {
+            if (!IsEnabled(logLevel)) return;
+
+
+            StringBuilder sb = new();
+            sb.Append($"[{_name}]{{{(int)logLevel}}} {state}: {exception?.Message}");
+            if (exception != null)
+            {
+                sb.AppendLine(exception.StackTrace);
+                var innerException = exception?.InnerException;
+                while (innerException != null)
+                {
+                    sb.AppendLine($"InnerException {innerException}: {innerException.Message}");
+                    sb.AppendLine(innerException.StackTrace);
+                    innerException = innerException.InnerException;
+                }
+            }
+
+            if (logLevel == LogLevel.Trace)
+                _pluginLog.Verbose(sb.ToString());
+            else if (logLevel == LogLevel.Debug)
+                _pluginLog.Debug(sb.ToString());
+            else if (logLevel == LogLevel.Information)
+                _pluginLog.Information(sb.ToString());
+            else if (logLevel == LogLevel.Warning)
+                _pluginLog.Warning(sb.ToString());
+            else if (logLevel == LogLevel.Error)
+                _pluginLog.Error(sb.ToString());
+            else if (logLevel == LogLevel.Critical)
+                _pluginLog.Fatal(sb.ToString());
+
         }
     }
 }

@@ -35,7 +35,7 @@ namespace InventorySearchBar.Inventories
             AtkComponentNode* window = _node->UldManager.NodeList[1]->GetAsAtkComponentNode();
             if (window == null || window->Component->UldManager.NodeListCount < 4) { return false; }
 
-            return window->Component->UldManager.NodeList[3]->IsVisible;
+            return window->Component->UldManager.NodeList[3]->IsVisible();
         }
 
         public void UpdateAddonReference()
@@ -145,9 +145,9 @@ namespace InventorySearchBar.Inventories
 
         protected static unsafe void SetNodeHighlight(AtkResNode* node, bool highlight)
         {
-            node->MultiplyRed = highlight || !node->IsVisible ? (byte)100 : (byte)20;
-            node->MultiplyGreen = highlight || !node->IsVisible ? (byte)100 : (byte)20;
-            node->MultiplyBlue = highlight || !node->IsVisible ? (byte)100 : (byte)20;
+            node->MultiplyRed = highlight || !node->IsVisible() ? (byte)100 : (byte)20;
+            node->MultiplyGreen = highlight || !node->IsVisible() ? (byte)100 : (byte)20;
+            node->MultiplyBlue = highlight || !node->IsVisible() ? (byte)100 : (byte)20;
         }
 
         public static unsafe void SetTabHighlight(AtkResNode* tab, bool highlight)
@@ -161,14 +161,14 @@ namespace InventorySearchBar.Inventories
         {
             if (tab->UldManager.NodeListCount < 2) { return false; }
 
-            return tab->UldManager.NodeList[2]->IsVisible;
+            return tab->UldManager.NodeList[2]->IsVisible();
         }
 
         public static unsafe bool GetSmallTabEnabled(AtkComponentBase* tab)
         {
             if (tab->UldManager.NodeListCount < 1) { return false; }
 
-            return tab->UldManager.NodeList[1]->IsVisible;
+            return tab->UldManager.NodeList[1]->IsVisible();
         }
     }
 }
