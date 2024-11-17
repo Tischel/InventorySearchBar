@@ -1,4 +1,4 @@
-﻿using Lumina.Excel.GeneratedSheets;
+﻿using Lumina.Excel.Sheets;
 
 namespace InventorySearchBar.Filters
 {
@@ -33,8 +33,6 @@ namespace InventorySearchBar.Filters
 
         protected override bool Execute(Item item, string term)
         {
-            if (item.ItemUICategory.Value == null) { return false; }
-
             return item.ItemUICategory.Value.Name.ToString().ToUpper().Contains(term);
         }
     }

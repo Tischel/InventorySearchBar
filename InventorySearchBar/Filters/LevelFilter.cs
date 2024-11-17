@@ -1,5 +1,5 @@
 ﻿using Dalamud.Game.ClientState.Objects.SubKinds;
-using Lumina.Excel.GeneratedSheets;
+using Lumina.Excel.Sheets;
 using System.Collections.Generic;
 
 namespace InventorySearchBar.Filters

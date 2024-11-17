@@ -1,5 +1,5 @@
 ﻿using ImGuiNET;
-using Lumina.Excel.GeneratedSheets;
+using Lumina.Excel.Sheets;
 using TPie.Helpers;
 
 namespace InventorySearchBar.Filters

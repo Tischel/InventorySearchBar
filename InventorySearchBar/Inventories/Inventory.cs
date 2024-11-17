@@ -71,7 +71,7 @@ namespace InventorySearchBar.Inventories
                         {
                             foreach (Filter filter in filters)
                             {
-                                if (filter.FilterItem(item.Item, term))
+                                if (filter.FilterItem(item.Item.Base, term))
                                 {
                                     successCount++;
                                     break;

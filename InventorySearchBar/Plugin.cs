@@ -1,4 +1,6 @@
-﻿using CriticalCommonLib;
+﻿using AllaganLib.GameSheets.Service;
+using AllaganLib.GameSheets.Sheets;
+using CriticalCommonLib;
 using CriticalCommonLib.Crafting;
 using CriticalCommonLib.Services;
 using Dalamud.Game.Command;
@@ -10,11 +12,13 @@ using InventorySearchBar.Filters;
 using InventorySearchBar.Helpers;
 using InventorySearchBar.Inventories;
 using InventorySearchBar.Windows;
+using Lumina.Excel.Sheets;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace InventorySearchBar
@@ -31,6 +35,7 @@ namespace InventorySearchBar
         public static IKeyState KeyState { get; private set; } = null!;
         public static IPluginLog Logger { get; private set; } = null!;
         public static IGameInteropProvider GameInteropProvider { get; private set; } = null!;
+        public static ICondition Condition { get; private set; } = null!;
 
 
         public static string AssemblyLocation { get; private set; } = "";
@@ -52,6 +57,7 @@ namespace InventorySearchBar
         public static CharacterMonitor CharacterMonitor { get; private set; } = null!;
         public static CraftMonitor CraftMonitor { get; private set; } = null!;
         public static GameUiManager GameUi { get; private set; } = null!;
+        public static SheetManager SheetManager { get; private set; } = null!;
 
         private static InventoriesManager _manager = null!;
         public static bool IsKeybindActive = false;
@@ -75,7 +81,8 @@ namespace InventorySearchBar
             IGameGui gameGui,
             IKeyState keyState,
             IPluginLog logger,
-            IGameInteropProvider gameInteropProvider
+            IGameInteropProvider gameInteropProvider,
+            ICondition condition
         )
         {
             ClientState = clientState;
@@ -88,12 +95,20 @@ namespace InventorySearchBar
             KeyState = keyState;
             Logger = logger;
             GameInteropProvider = gameInteropProvider;
+            Condition = condition;
 
             KeyboardHelper.Initialize();
 
             // allagan tools setup
+            SheetManager = new SheetManager(DataManager.GameData, new SheetManagerStartupOptions()
+            {
+                BuildNpcLevels = false,
+                BuildNpcShops = false,
+                BuildItemInfoCache = false
+            });
+
             pluginInterface.Create<Service>();
-            Service.ExcelCache = new ExcelCache(Service.Data, new DalamudLogger<ExcelCache>("ExcelCache", logger));
+            Service.ExcelCache = new ExcelCache(SheetManager, new CraftingCache(SheetManager), DataManager.GameData);
 
             if (pluginInterface.AssemblyLocation.DirectoryName != null)
             {
@@ -104,7 +119,7 @@ namespace InventorySearchBar
                 AssemblyLocation = Assembly.GetExecutingAssembly().Location;
             }
 
-            Version = Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "1.5.0.0";
+            Version = Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "1.6.0.0";
 
             Framework.Update += Update;
             UiBuilder.Draw += Draw;
@@ -143,17 +158,22 @@ namespace InventorySearchBar
         {
             await Task.Run(() =>
             {
-                var token = new System.Threading.CancellationToken();
-                var task = Service.ExcelCache.StartAsync(token);
-
-                Service.ExcelCache.PreCacheItemData();
-
-                GameInterface = new GameInterface(GameInteropProvider);
-                CharacterMonitor = new CharacterMonitor(Framework, ClientState, Service.ExcelCache);
+                GameInterface = new GameInterface(GameInteropProvider, Condition, Service.ExcelCache, Framework);
+                CharacterMonitor = new CharacterMonitor(Framework, ClientState, SheetManager.GetSheet<TerritoryTypeSheet>());
                 GameUi = new GameUiManager(Framework, GameGui);
-                CraftMonitor = new CraftMonitor(GameUi);
-                OdrScanner = new OdrScanner(CharacterMonitor, ClientState, Logger);
-                InventoryScanner = new InventoryScanner(CharacterMonitor, GameUi, GameInterface, OdrScanner, GameInteropProvider, Service.ExcelCache);
+                CraftMonitor = new CraftMonitor(GameUi, SheetManager.GetSheet<RecipeSheet>());
+                OdrScanner = new OdrScanner(Framework, Logger, GameInteropProvider, ClientState);
+                OdrScanner.StartAsync(CancellationToken.None).Wait();
+                InventoryScanner = new InventoryScanner(
+                    CharacterMonitor,
+                    GameUi,
+                    Framework,
+                    GameInterface,
+                    OdrScanner,
+                    GameInteropProvider,
+                    SheetManager.GetSheet<CabinetSheet>(),
+                    Logger
+                );
                 InventoryMonitor = new InventoryMonitor(CharacterMonitor, CraftMonitor, InventoryScanner, Framework);
                 InventoryMonitor.Start();
                 InventoryScanner.Enable();
@@ -259,8 +279,10 @@ namespace InventorySearchBar
             InventoryScanner.Dispose();
             OdrScanner.Dispose();
 
+            OdrScanner.StopAsync(CancellationToken.None).Wait();
             GameInterface.Dispose();
-            Service.ExcelCache.Destroy();
+            SheetManager.Dispose();
+            Service.ExcelCache.Dispose();
 
             _windowSystem.RemoveAllWindows();
             _manager.Dispose();
