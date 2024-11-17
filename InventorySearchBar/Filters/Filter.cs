@@ -1,5 +1,5 @@
-﻿using ImGuiNET;
-using Lumina.Excel.GeneratedSheets;
+﻿using AllaganLib.GameSheets.Sheets.Rows;
+using ImGuiNET;
 using TPie.Helpers;
 
 namespace InventorySearchBar.Filters
@@ -19,7 +19,7 @@ namespace InventorySearchBar.Filters
 
         private string _tagCharacter => Plugin.Settings.TagSeparatorCharacter;
 
-        public bool FilterItem(Item item, string term)
+        public bool FilterItem(ItemRow item, string term)
         {
             if (!Enabled) { return true; }
 
@@ -53,7 +53,7 @@ namespace InventorySearchBar.Filters
             return t;
         }
 
-        protected abstract bool Execute(Item item, string term);
+        protected abstract bool Execute(ItemRow item, string term);
 
         public void Draw(float scale)
         {

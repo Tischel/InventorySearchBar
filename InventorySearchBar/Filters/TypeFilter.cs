@@ -1,4 +1,6 @@
-﻿using Lumina.Excel.GeneratedSheets;
+﻿
+
+using AllaganLib.GameSheets.Sheets.Rows;
 
 namespace InventorySearchBar.Filters
 {
@@ -31,11 +33,11 @@ namespace InventorySearchBar.Filters
             set => Plugin.Settings.TypeFilterAbbreviatedTag = value;
         }
 
-        protected override bool Execute(Item item, string term)
+        protected override bool Execute(ItemRow item, string term)
         {
-            if (item.ItemUICategory.Value == null) { return false; }
+            if (item.Base.ItemUICategory.ValueNullable == null) { return false; }
 
-            return item.ItemUICategory.Value.Name.ToString().ToUpper().Contains(term);
+            return item.Base.ItemUICategory.Value.Name.ExtractText().ToUpper().Contains(term);
         }
     }
 }

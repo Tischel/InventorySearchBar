@@ -1,4 +1,6 @@
-﻿using Lumina.Excel.GeneratedSheets;
+﻿
+
+using AllaganLib.GameSheets.Sheets.Rows;
 
 namespace InventorySearchBar.Filters
 {
@@ -31,9 +33,9 @@ namespace InventorySearchBar.Filters
             set => Plugin.Settings.NameFilterAbbreviatedTag = value;
         }
 
-        protected override bool Execute(Item item, string term)
+        protected override bool Execute(ItemRow item, string term)
         {
-            return item.Name.ToString().ToUpper().Contains(term);
+            return item.Base.Name.ExtractText().ToUpper().Contains(term);
         }
     }
 }

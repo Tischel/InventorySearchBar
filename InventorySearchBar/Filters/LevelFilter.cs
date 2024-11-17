@@ -1,6 +1,7 @@
 ﻿using Dalamud.Game.ClientState.Objects.SubKinds;
-using Lumina.Excel.GeneratedSheets;
+
 using System.Collections.Generic;
+using AllaganLib.GameSheets.Sheets.Rows;
 
 namespace InventorySearchBar.Filters
 {
@@ -51,7 +52,7 @@ namespace InventorySearchBar.Filters
             [">"] = ComparisonType.Greater
         };
 
-        protected override bool Execute(Item item, string term)
+        protected override bool Execute(ItemRow item, string term)
         {
             ComparisonType comparison = ComparisonType.LessOrEqual;
             byte value = 0;
@@ -82,11 +83,11 @@ namespace InventorySearchBar.Filters
 
             switch (comparison)
             {
-                case ComparisonType.Less: return item.LevelEquip < value;
-                case ComparisonType.LessOrEqual: return item.LevelEquip <= value;
-                case ComparisonType.Equal: return item.LevelEquip == value;
-                case ComparisonType.GreaterOrEqual: return item.LevelEquip >= value;
-                case ComparisonType.Greater: return item.LevelEquip > value;
+                case ComparisonType.Less: return item.Base.LevelEquip < value;
+                case ComparisonType.LessOrEqual: return item.Base.LevelEquip <= value;
+                case ComparisonType.Equal: return item.Base.LevelEquip == value;
+                case ComparisonType.GreaterOrEqual: return item.Base.LevelEquip >= value;
+                case ComparisonType.Greater: return item.Base.LevelEquip > value;
             }
 
             return false;
