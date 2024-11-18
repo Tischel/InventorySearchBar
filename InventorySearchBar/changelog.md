@@ -1,3 +1,6 @@
+# 1.6.0.1
+- Fixed language support.
+
 # 1.6.0.0
 - Added support for Patch 7.1 and Dalamud API 11.
 
