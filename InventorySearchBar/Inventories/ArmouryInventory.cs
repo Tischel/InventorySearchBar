@@ -1,4 +1,4 @@
-﻿using CriticalCommonLib.Enums;
+using CriticalCommonLib.Enums;
 using CriticalCommonLib.Models;
 using InventorySearchBar.Filters;
 using System.Collections.Generic;
@@ -26,7 +26,7 @@ namespace InventorySearchBar.Inventories
             [113] = (int)InventoryType.ArmoryEar,
             [114] = (int)InventoryType.ArmoryOff,
             [115] = (int)InventoryType.ArmoryFeet,
-            [116] = (int)InventoryType.ArmoryWaist,
+            [116] = (int)InventoryType.ArmoryLegs,
             [117] = (int)InventoryType.ArmoryHand,
             [118] = (int)InventoryType.ArmoryBody,
             [119] = (int)InventoryType.ArmoryHead,
@@ -41,7 +41,7 @@ namespace InventorySearchBar.Inventories
         protected override List<List<bool>> GetEmptyFilter()
         {
             // 1 grid of 50 items
-            List<List<bool>>  emptyFilter = new List<List<bool>>();
+            List<List<bool>> emptyFilter = new List<List<bool>>();
             List<bool> list = new List<bool>(GridItemCount);
             for (int j = 0; j < GridItemCount; j++)
             {
