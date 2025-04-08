@@ -13,6 +13,7 @@ using InventorySearchBar.Helpers;
 using InventorySearchBar.Inventories;
 using InventorySearchBar.Windows;
 using Lumina.Excel.Sheets;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -20,24 +21,12 @@ using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using CriticalCommonLib.Models;
 
 namespace InventorySearchBar
 {
     public class Plugin : IDalamudPlugin
     {
-        public static IClientState ClientState { get; private set; } = null!;
-        public static ICommandManager CommandManager { get; private set; } = null!;
-        public static IDalamudPluginInterface PluginInterface { get; private set; } = null!;
-        public static IFramework Framework { get; private set; } = null!;
-        public static IGameGui GameGui { get; private set; } = null!;
-        public static IUiBuilder UiBuilder { get; private set; } = null!;
-        public static IDataManager DataManager { get; private set; } = null!;
-        public static IKeyState KeyState { get; private set; } = null!;
-        public static IPluginLog Logger { get; private set; } = null!;
-        public static IGameInteropProvider GameInteropProvider { get; private set; } = null!;
-        public static ICondition Condition { get; private set; } = null!;
-
-
         public static string AssemblyLocation { get; private set; } = "";
         public string Name => "InventorySearchBar";
 
@@ -72,43 +61,20 @@ namespace InventorySearchBar
             new LevelFilter()
         };
 
-        public Plugin(
-            IClientState clientState,
-            ICommandManager commandManager,
-            IDalamudPluginInterface pluginInterface,
-            IFramework framework,
-            IDataManager dataManager,
-            IGameGui gameGui,
-            IKeyState keyState,
-            IPluginLog logger,
-            IGameInteropProvider gameInteropProvider,
-            ICondition condition
-        )
+        public Plugin(IDalamudPluginInterface pluginInterface)
         {
-            ClientState = clientState;
-            CommandManager = commandManager;
-            PluginInterface = pluginInterface;
-            Framework = framework;
-            DataManager = dataManager;
-            GameGui = gameGui;
-            UiBuilder = pluginInterface.UiBuilder;
-            KeyState = keyState;
-            Logger = logger;
-            GameInteropProvider = gameInteropProvider;
-            Condition = condition;
+            pluginInterface.Create<Services>();
 
             KeyboardHelper.Initialize();
 
             // allagan tools setup
-            SheetManager = new SheetManager(DataManager.GameData, new SheetManagerStartupOptions()
+            SheetManager = new SheetManager(Services.Data.GameData, new SheetManagerStartupOptions()
             {
                 BuildNpcLevels = false,
                 BuildNpcShops = false,
                 BuildItemInfoCache = false
             });
 
-            pluginInterface.Create<Service>();
-            Service.ExcelCache = new ExcelCache(SheetManager, new CraftingCache(SheetManager), DataManager.GameData);
 
             if (pluginInterface.AssemblyLocation.DirectoryName != null)
             {
@@ -121,11 +87,11 @@ namespace InventorySearchBar
 
             Version = Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "1.6.0.1";
 
-            Framework.Update += Update;
-            UiBuilder.Draw += Draw;
-            UiBuilder.OpenConfigUi += OpenConfigUi;
+            Services.Framework.Update += Update;
+            Services.PluginInterface.UiBuilder.Draw += Draw;
+            Services.PluginInterface.UiBuilder.OpenConfigUi += OpenConfigUi;
 
-            CommandManager.AddHandler(
+            Services.CommandManager.AddHandler(
                 "/inventorysearchbar",
                 new CommandInfo(PluginCommand)
                 {
@@ -135,7 +101,7 @@ namespace InventorySearchBar
                 }
             );
 
-            CommandManager.AddHandler(
+            Services.CommandManager.AddHandler(
                 "/isb",
                 new CommandInfo(PluginCommand)
                 {
@@ -158,23 +124,27 @@ namespace InventorySearchBar
         {
             await Task.Run(() =>
             {
-                GameInterface = new GameInterface(GameInteropProvider, Condition, Service.ExcelCache, Framework);
-                CharacterMonitor = new CharacterMonitor(Framework, ClientState, SheetManager.GetSheet<TerritoryTypeSheet>());
-                GameUi = new GameUiManager(Framework, GameGui);
-                CraftMonitor = new CraftMonitor(GameUi, SheetManager.GetSheet<RecipeSheet>());
-                OdrScanner = new OdrScanner(Framework, Logger, GameInteropProvider, ClientState);
+                GameInterface = new GameInterface(Services.GameInteropProvider, Services.Condition, SheetManager.GetSheet<GatheringItemSheet>(), SheetManager.GetSheet<CabinetSheet>(), SheetManager.GetSheet<RecipeSheet>(), Services.Framework, Services.Log);
+                CharacterMonitor = new CharacterMonitor(Services.Framework, Services.ClientState, SheetManager.GetSheet<TerritoryTypeSheet>(), Host.Services.GetRequiredService<Character.Factory>(), Services.Log);
+                GameUi = new GameUiManager(Services.Framework, Services.GameGui, Services.Log);
+                CraftMonitor = new CraftMonitor(GameUi, SheetManager.GetSheet<RecipeSheet>(), Services.ClientState, Services.Framework, Services.Log);
+                OdrScanner = new OdrScanner(Services.Framework, Services.Log, Services.GameInteropProvider, Services.ClientState);
                 OdrScanner.StartAsync(CancellationToken.None).Wait();
                 InventoryScanner = new InventoryScanner(
                     CharacterMonitor,
                     GameUi,
-                    Framework,
+                    Services.Framework,
                     GameInterface,
                     OdrScanner,
-                    GameInteropProvider,
+                    Services.GameInteropProvider,
                     SheetManager.GetSheet<CabinetSheet>(),
-                    Logger
+                    Services.Data.Excel.GetSheet<MirageStoreSetItem>(),
+                    Services.Log,
+                    SheetManager.GetSheet<ItemSheet>(),
+                    Services.ClientState,
+                    new MarketOrderService(Services.GameGui, SheetManager.GetSheet<ItemSheet>())
                 );
-                InventoryMonitor = new InventoryMonitor(CharacterMonitor, CraftMonitor, InventoryScanner, Framework);
+                InventoryMonitor = new InventoryMonitor(CharacterMonitor, CraftMonitor, InventoryScanner, Services.Framework, Services.Log);
                 InventoryMonitor.Start();
                 InventoryScanner.Enable();
             });
@@ -210,7 +180,7 @@ namespace InventorySearchBar
 
         private unsafe void Update(IFramework framework)
         {
-            if (Settings == null || ClientState.LocalPlayer == null || _manager == null) return;
+            if (Settings == null || Services.ClientState.LocalPlayer == null || _manager == null) return;
 
             if (!_libLoaded)
             {
@@ -229,7 +199,7 @@ namespace InventorySearchBar
 
         private unsafe void Draw()
         {
-            if (Settings == null || ClientState.LocalPlayer == null || _manager == null) return;
+            if (Settings == null || Services.ClientState.LocalPlayer == null || _manager == null) return;
 
             if (_manager.ActiveInventory == null)
             {
@@ -282,17 +252,16 @@ namespace InventorySearchBar
             OdrScanner.StopAsync(CancellationToken.None).Wait();
             GameInterface.Dispose();
             SheetManager.Dispose();
-            Service.ExcelCache.Dispose();
 
             _windowSystem.RemoveAllWindows();
             _manager.Dispose();
 
-            CommandManager.RemoveHandler("/inventorysearchbar");
-            CommandManager.RemoveHandler("/isb");
+            Services.CommandManager.RemoveHandler("/inventorysearchbar");
+            Services.CommandManager.RemoveHandler("/isb");
 
-            Framework.Update -= Update;
-            UiBuilder.Draw -= Draw;
-            UiBuilder.OpenConfigUi -= OpenConfigUi;
+            Services.Framework.Update -= Update;
+            Services.PluginInterface.UiBuilder.Draw -= Draw;
+            Services.PluginInterface.UiBuilder.OpenConfigUi -= OpenConfigUi;
         }
     }
 

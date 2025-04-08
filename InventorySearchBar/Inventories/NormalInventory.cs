@@ -16,7 +16,7 @@ namespace InventorySearchBar.Inventories
             int offset = GetGridOffset();
             if (offset == -1) { return; }
 
-            AtkUnitBase* grid = (AtkUnitBase*)Plugin.GameGui.GetAddonByName("InventoryGrid", 1);
+            AtkUnitBase* grid = (AtkUnitBase*)Services.GameGui.GetAddonByName("InventoryGrid", 1);
             UpdateGridHighlights(grid, 3, offset);
 
             HighlightTabs(forced);

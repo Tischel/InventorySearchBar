@@ -57,7 +57,7 @@ namespace InventorySearchBar
         public string LevelFilterAbbreviatedTag = "l";
 
         #region load / save
-        private static string JsonPath = Path.Combine(Plugin.PluginInterface.GetPluginConfigDirectory(), "Settings.json");
+        private static string JsonPath = Path.Combine(Services.PluginInterface.GetPluginConfigDirectory(), "Settings.json");
         public static Settings Load()
         {
             string path = JsonPath;
@@ -73,7 +73,7 @@ namespace InventorySearchBar
             }
             catch (Exception e)
             {
-                Plugin.Logger.Error("Error reading settings file: " + e.Message);
+                Services.Log.Error("Error reading settings file: " + e.Message);
             }
 
             if (settings == null)
@@ -100,7 +100,7 @@ namespace InventorySearchBar
             }
             catch (Exception e)
             {
-                Plugin.Logger.Error("Error saving settings file: " + e.Message);
+                Services.Log.Error("Error saving settings file: " + e.Message);
             }
         }
         #endregion

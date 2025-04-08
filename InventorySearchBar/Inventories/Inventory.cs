@@ -40,7 +40,7 @@ namespace InventorySearchBar.Inventories
 
         public void UpdateAddonReference()
         {
-            _addon = Plugin.GameGui.GetAddonByName(AddonName, 1);
+            _addon = Services.GameGui.GetAddonByName(AddonName, 1);
         }
 
         public virtual void ApplyFilters(List<Filter> filters, string text)

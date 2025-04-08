@@ -47,7 +47,7 @@ namespace InventorySearchBar
             {
                 try
                 {
-                    Plugin.KeyState[Key] = false;
+                    Services.KeyState[Key] = false;
                 }
                 catch { }
             }
