@@ -2,6 +2,15 @@
   "version": 1,
   "dependencies": {
     "net9.0-windows7.0": {
+      "Autofac": {
+        "type": "Direct",
+        "requested": "[8.2.1, )",
+        "resolved": "8.2.1",
+        "contentHash": "q5xYBykgdvBlcmrXzHcDWcfeVktGEraluypkC0IRTupfxk+r+z+JcXgKj5kldKGe1fflyW3Ya3y9Soe9J2CqEA==",
+        "dependencies": {
+          "System.Diagnostics.DiagnosticSource": "8.0.1"
+        }
+      },
       "DalamudPackager": {
         "type": "Direct",
         "requested": "[12.0.0, )",
@@ -13,6 +22,17 @@
         "requested": "[1.2.25, )",
         "resolved": "1.2.25",
         "contentHash": "xCXiw7BCxHJ8pF6wPepRUddlh2dlQlbr81gXA72hdk4FLHkKXas7EH/n+fk5UCA/YfMqG1Z6XaPiUjDbUNBUzg=="
+      },
+      "LuminaSupplemental.Excel": {
+        "type": "Direct",
+        "requested": "[2.3.0, )",
+        "resolved": "2.3.0",
+        "contentHash": "gSvHph3Hii0SWmvRwKOvO1/W8uAP8Aaqqh6HQmQFPtxWujhLcjvcFZ5Co1MYvb6PGXcOcfLB6Shr9UkV8/GaIA==",
+        "dependencies": {
+          "CSVFile": "3.2.0",
+          "CsvHelper": "30.0.1",
+          "Sylvan.Data.Csv": "1.3.9"
+        }
       },
       "AllaganLib.GameSheets": {
         "type": "Transitive",
@@ -32,14 +52,6 @@
         "dependencies": {
           "Microsoft.Extensions.Hosting": "8.0.0",
           "Microsoft.Extensions.Hosting.Abstractions": "8.0.0"
-        }
-      },
-      "Autofac": {
-        "type": "Transitive",
-        "resolved": "8.0.0",
-        "contentHash": "qxVqJcl3fixxa5aZc9TmIuYTwooI9GCL5RzfUiTZtTlbAF3NcWz7bPeEyJEAyS/0qGhSyGnXeku2eiu/7L+3qw==",
-        "dependencies": {
-          "System.Diagnostics.DiagnosticSource": "7.0.2"
         }
       },
       "Autofac.Extensions.DependencyInjection": {
@@ -68,16 +80,6 @@
         "dependencies": {
           "System.Memory": "4.5.5",
           "System.ValueTuple": "4.5.0"
-        }
-      },
-      "LuminaSupplemental.Excel": {
-        "type": "Transitive",
-        "resolved": "2.3.0",
-        "contentHash": "gSvHph3Hii0SWmvRwKOvO1/W8uAP8Aaqqh6HQmQFPtxWujhLcjvcFZ5Co1MYvb6PGXcOcfLB6Shr9UkV8/GaIA==",
-        "dependencies": {
-          "CSVFile": "3.2.0",
-          "CsvHelper": "30.0.1",
-          "Sylvan.Data.Csv": "1.3.9"
         }
       },
       "Microsoft.Extensions.Configuration": {
@@ -375,8 +377,8 @@
       },
       "System.Diagnostics.DiagnosticSource": {
         "type": "Transitive",
-        "resolved": "7.0.2",
-        "contentHash": "hYr3I9N9811e0Bjf2WNwAGGyTuAFbbTgX1RPLt/3Wbm68x3IGcX5Cl75CMmgT6WlNwLQ2tCCWfqYPpypjaf2xA=="
+        "resolved": "8.0.1",
+        "contentHash": "vaoWjvkG1aenR2XdjaVivlCV9fADfgyhW5bZtXT23qaEea0lWiUljdQuze4E31vKM7ZWJaSUsbYIKE3rnzfZUg=="
       },
       "System.Diagnostics.EventLog": {
         "type": "Transitive",
