@@ -23,7 +23,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using AllaganLib.GameSheets.Extensions;
 using Autofac;
-using Autofac.Core;
 using CriticalCommonLib.Models;
 using Inventory = CriticalCommonLib.Models.Inventory;
 
@@ -116,7 +115,7 @@ namespace InventorySearchBar
 
             _manager = new InventoriesManager();
 
-            LoadLib();
+            // LoadLib();
         }
 
         private void LoadLib()
@@ -204,10 +203,10 @@ namespace InventorySearchBar
                 _libLoaded = true;
             }
 
-            KeyboardHelper.Instance?.Update();
-            _manager?.Update();
+            KeyboardHelper.Instance.Update();
+            _manager.Update();
 
-            if (_manager?.ActiveInventory != null)
+            if (_manager.ActiveInventory != null)
             {
                 IsKeybindActive = Settings.Keybind.IsActive();
             }
@@ -232,7 +231,7 @@ namespace InventorySearchBar
                 _manager.ActiveInventory.UpdateHighlights();
             }
 
-            _windowSystem?.Draw();
+            _windowSystem.Draw();
         }
 
         public static unsafe void ClearHighlights()
@@ -308,7 +307,7 @@ namespace InventorySearchBar
             if (exception != null)
             {
                 sb.AppendLine(exception.StackTrace);
-                var innerException = exception?.InnerException;
+                var innerException = exception.InnerException;
                 while (innerException != null)
                 {
                     sb.AppendLine($"InnerException {innerException}: {innerException.Message}");
