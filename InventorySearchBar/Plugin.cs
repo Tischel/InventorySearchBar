@@ -1,7 +1,9 @@
 ﻿using AllaganLib.GameSheets.Service;
-using AllaganLib.GameSheets.Sheets;
-using CriticalCommonLib;
+using AllaganLib.GameSheets.Extensions;
+using Autofac;
+using Autofac.Core;
 using CriticalCommonLib.Crafting;
+using CriticalCommonLib.Models;
 using CriticalCommonLib.Services;
 using Dalamud.Game.Command;
 using Dalamud.Interface;
@@ -12,14 +14,12 @@ using InventorySearchBar.Filters;
 using InventorySearchBar.Helpers;
 using InventorySearchBar.Inventories;
 using InventorySearchBar.Windows;
-using Lumina.Excel.Sheets;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace InventorySearchBar
 {
@@ -64,6 +64,10 @@ namespace InventorySearchBar
 
         private bool _libLoaded = false;
 
+        private IContainer Container { get; set; } = null!;
+        private ILifetimeScope ContainerLifetime { get; set; } = null!;
+        private CancellationTokenSource _cancelTokenSource = new CancellationTokenSource();
+
         public static List<Filter> Filters = new List<Filter>()
         {
             new NameFilter(),
@@ -107,9 +111,6 @@ namespace InventorySearchBar
                 BuildItemInfoCache = false
             });
 
-            pluginInterface.Create<Service>();
-            Service.ExcelCache = new ExcelCache(SheetManager, new CraftingCache(SheetManager), DataManager.GameData);
-
             if (pluginInterface.AssemblyLocation.DirectoryName != null)
             {
                 AssemblyLocation = pluginInterface.AssemblyLocation.DirectoryName + "\\";
@@ -119,7 +120,7 @@ namespace InventorySearchBar
                 AssemblyLocation = Assembly.GetExecutingAssembly().Location;
             }
 
-            Version = Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "1.6.0.1";
+            Version = Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "1.7.0.0";
 
             Framework.Update += Update;
             UiBuilder.Draw += Draw;
@@ -154,30 +155,52 @@ namespace InventorySearchBar
             //LoadLib();
         }
 
-        private async void LoadLib()
+        private void LoadLib()
         {
-            await Task.Run(() =>
+            //Build a mini container to handle resolution
+            var builder = new ContainerBuilder();
+            builder.RegisterGameSheetManager(new SheetManagerStartupOptions()
             {
-                GameInterface = new GameInterface(GameInteropProvider, Condition, Service.ExcelCache, Framework);
-                CharacterMonitor = new CharacterMonitor(Framework, ClientState, SheetManager.GetSheet<TerritoryTypeSheet>());
-                GameUi = new GameUiManager(Framework, GameGui);
-                CraftMonitor = new CraftMonitor(GameUi, SheetManager.GetSheet<RecipeSheet>());
-                OdrScanner = new OdrScanner(Framework, Logger, GameInteropProvider, ClientState);
-                OdrScanner.StartAsync(CancellationToken.None).Wait();
-                InventoryScanner = new InventoryScanner(
-                    CharacterMonitor,
-                    GameUi,
-                    Framework,
-                    GameInterface,
-                    OdrScanner,
-                    GameInteropProvider,
-                    SheetManager.GetSheet<CabinetSheet>(),
-                    Logger
-                );
-                InventoryMonitor = new InventoryMonitor(CharacterMonitor, CraftMonitor, InventoryScanner, Framework);
-                InventoryMonitor.Start();
-                InventoryScanner.Enable();
+                BuildNpcLevels = false,
+                BuildNpcShops = false,
+                BuildItemInfoCache = false,
             });
+
+            builder.RegisterInstance(Condition).AsImplementedInterfaces().AsSelf().ExternallyOwned();
+            builder.RegisterInstance(GameInteropProvider).AsImplementedInterfaces().AsSelf().ExternallyOwned();
+            builder.RegisterInstance(Framework).AsImplementedInterfaces().AsSelf().ExternallyOwned();
+            builder.RegisterInstance(Logger).AsImplementedInterfaces().AsSelf().ExternallyOwned();
+            builder.RegisterInstance(ClientState).AsImplementedInterfaces().AsSelf().ExternallyOwned();
+            builder.RegisterInstance(GameGui).AsImplementedInterfaces().AsSelf().ExternallyOwned();
+            builder.RegisterInstance(DataManager.GameData).AsImplementedInterfaces().AsSelf().ExternallyOwned();
+
+            builder.RegisterType<GameInterface>().AsImplementedInterfaces().AsSelf().SingleInstance();
+            builder.RegisterType<CharacterMonitor>().AsImplementedInterfaces().AsSelf().SingleInstance();
+            builder.RegisterType<GameUiManager>().AsImplementedInterfaces().AsSelf().SingleInstance();
+            builder.RegisterType<CraftMonitor>().AsImplementedInterfaces().AsSelf().SingleInstance();
+            builder.RegisterType<OdrScanner>().AsImplementedInterfaces().AsSelf().SingleInstance();
+            builder.RegisterType<InventoryScanner>().AsImplementedInterfaces().AsSelf().SingleInstance();
+            builder.RegisterType<MarketOrderService>().AsImplementedInterfaces().AsSelf().SingleInstance();
+            builder.RegisterType<InventoryMonitor>().AsImplementedInterfaces().AsSelf().SingleInstance();
+            builder.RegisterType<CriticalCommonLib.Models.Inventory>().AsSelf();
+            builder.RegisterType<Character>().AsSelf();
+            builder.RegisterType<InventoryItem>().AsSelf();
+            builder.RegisterType<InventoryChange>().AsSelf();
+
+            Container = builder.Build();
+
+            ContainerLifetime = Container.BeginLifetimeScope();
+            InventoryMonitor = ContainerLifetime.Resolve<InventoryMonitor>();
+            GameInterface = ContainerLifetime.Resolve<GameInterface>();
+            CharacterMonitor = ContainerLifetime.Resolve<CharacterMonitor>();
+            GameUi = ContainerLifetime.Resolve<GameUiManager>();
+            CraftMonitor = ContainerLifetime.Resolve<CraftMonitor>();
+            OdrScanner = ContainerLifetime.Resolve<OdrScanner>();
+            InventoryScanner = ContainerLifetime.Resolve<InventoryScanner>();
+
+            OdrScanner.StartAsync(_cancelTokenSource.Token).Wait();
+            InventoryMonitor.Start();
+            InventoryScanner.Enable();
         }
 
         public void Dispose()
@@ -268,6 +291,10 @@ namespace InventorySearchBar
 
             ClearHighlights();
 
+            _cancelTokenSource.Cancel();
+            ContainerLifetime.Dispose();
+            Container.Dispose();
+
             KeyboardHelper.Instance?.Dispose();
 
             Settings.Save(Settings);
@@ -282,7 +309,6 @@ namespace InventorySearchBar
             OdrScanner.StopAsync(CancellationToken.None).Wait();
             GameInterface.Dispose();
             SheetManager.Dispose();
-            Service.ExcelCache.Dispose();
 
             _windowSystem.RemoveAllWindows();
             _manager.Dispose();
