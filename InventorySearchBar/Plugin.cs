@@ -36,7 +36,7 @@ namespace InventorySearchBar
         public static IPluginLog Logger { get; private set; } = null!;
         public static IGameInteropProvider GameInteropProvider { get; private set; } = null!;
         public static ICondition Condition { get; private set; } = null!;
-
+        public static IAddonLifecycle AddonLifecycle { get; private set; } = null!;
 
         public static string AssemblyLocation { get; private set; } = "";
         public string Name => "InventorySearchBar";
@@ -86,7 +86,8 @@ namespace InventorySearchBar
             IKeyState keyState,
             IPluginLog logger,
             IGameInteropProvider gameInteropProvider,
-            ICondition condition
+            ICondition condition,
+            IAddonLifecycle addonLifecycle
         )
         {
             ClientState = clientState;
@@ -100,6 +101,7 @@ namespace InventorySearchBar
             Logger = logger;
             GameInteropProvider = gameInteropProvider;
             Condition = condition;
+            AddonLifecycle = addonLifecycle;
 
             KeyboardHelper.Initialize();
 
@@ -173,11 +175,13 @@ namespace InventorySearchBar
             builder.RegisterInstance(ClientState).AsImplementedInterfaces().AsSelf().ExternallyOwned();
             builder.RegisterInstance(GameGui).AsImplementedInterfaces().AsSelf().ExternallyOwned();
             builder.RegisterInstance(DataManager.GameData).AsImplementedInterfaces().AsSelf().ExternallyOwned();
+            builder.RegisterInstance(AddonLifecycle).AsImplementedInterfaces().AsSelf().ExternallyOwned();
 
             builder.RegisterType<GameInterface>().AsImplementedInterfaces().AsSelf().SingleInstance();
             builder.RegisterType<CharacterMonitor>().AsImplementedInterfaces().AsSelf().SingleInstance();
             builder.RegisterType<GameUiManager>().AsImplementedInterfaces().AsSelf().SingleInstance();
             builder.RegisterType<CraftMonitor>().AsImplementedInterfaces().AsSelf().SingleInstance();
+            builder.RegisterType<ClassJobService>().AsImplementedInterfaces().AsSelf().SingleInstance();
             builder.RegisterType<OdrScanner>().AsImplementedInterfaces().AsSelf().SingleInstance();
             builder.RegisterType<InventoryScanner>().AsImplementedInterfaces().AsSelf().SingleInstance();
             builder.RegisterType<MarketOrderService>().AsImplementedInterfaces().AsSelf().SingleInstance();

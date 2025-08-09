@@ -1,4 +1,4 @@
-﻿using ImGuiNET;
+﻿using Dalamud.Bindings.ImGui;
 using InventorySearchBar.Helpers;
 
 namespace InventorySearchBar
