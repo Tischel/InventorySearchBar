@@ -47,7 +47,6 @@
 		<Content Include="$(ProjectDir)Media\**" CopyToOutputDirectory="PreserveNewest" />
 		<!-- <Content Include="$(ProjectDir)Media\icon.png" Link="images/icon.png" CopyToOutputDirectory="PreserveNewest" Visible="false" /> -->
 	</ItemGroup>
-
 	<ItemGroup>
 	  <ProjectReference Include="..\CriticalCommonLib\CriticalCommonLib.csproj" />
 	</ItemGroup>
