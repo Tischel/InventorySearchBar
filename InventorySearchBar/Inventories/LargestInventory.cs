@@ -14,7 +14,7 @@ namespace InventorySearchBar.Inventories
 
             for (int i = 0; i < 4; i++)
             {
-                AtkUnitBase* grid = (AtkUnitBase*)Plugin.GameGui.GetAddonByName("InventoryGrid" + i + "E", 1);
+                AtkUnitBase* grid = (AtkUnitBase*)Plugin.GameGui.GetAddonByName("InventoryGrid" + i + "E", 1).Address;
                 UpdateGridHighlights(grid, 3, i);
             }
         }
