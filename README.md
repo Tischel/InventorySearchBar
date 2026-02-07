@@ -1,7 +1,8 @@
 > [!IMPORTANT]  
-> THIS PLUGIN IS NO LONGER MAINTAINED !!!
-> As a replacement you can try the "Vanilla Plus" plugin by [MidoriKami](https://github.com/MidoriKami)
-> which provides similar functionalities.
+> DEVELOPMENT HAS BEEN MOVED TO [CAITLYN'S FORK](https://github.com/caitlyn-gg/InventorySearchBar).
+>
+> Alternatively you can try the "Vanilla Plus" plugin by [MidoriKami](https://github.com/MidoriKami)
+> which provides similar functionalities to this plugin.
 
 # Inventory Search Bar Plugin
 
